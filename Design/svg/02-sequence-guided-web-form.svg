@@ -1,0 +1,175 @@
+<svg viewBox="0 0 1320 1170" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1c1b18"/>
+    </marker>
+    <marker id="arrow2d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#767268"/>
+    </marker>
+  </defs>
+  <rect width="1320" height="1170" fill="#ffffff"/>
+  <text x="660" y="26" text-anchor="middle" font-size="18" font-weight="700" fill="#1c1b18">Guided Web Form — Ticket Creation</text>
+
+  <!-- lifelines -->
+  <line x1="90" y1="90" x2="90" y2="1120" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="310" y1="90" x2="310" y2="1120" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="530" y1="90" x2="530" y2="1120" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="750" y1="90" x2="750" y2="1120" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="970" y1="90" x2="970" y2="1120" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="1180" y1="90" x2="1180" y2="1120" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- actor: Office Admin -->
+  <circle cx="90" cy="46" r="9" fill="none" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="90" y1="55" x2="90" y2="75" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="75" y1="63" x2="105" y2="63" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="90" y1="75" x2="76" y2="90" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="90" y1="75" x2="104" y2="90" stroke="#1c1b18" stroke-width="1.6"/>
+  <text x="90" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Office Admin</text>
+
+  <!-- participant boxes -->
+  <g>
+    <rect x="235" y="40" width="150" height="46" rx="8" fill="#fdf3ec" stroke="#b3541e" stroke-width="1.5"/>
+    <text x="310" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Browser UI</text>
+    <text x="310" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">public/app.js</text>
+  </g>
+  <g>
+    <rect x="455" y="40" width="150" height="46" rx="8" fill="#ffffff" stroke="#e2ded3" stroke-width="1.5"/>
+    <text x="530" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">HTTP Server</text>
+    <text x="530" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">server/index.js</text>
+  </g>
+  <g>
+    <rect x="675" y="40" width="150" height="46" rx="8" fill="#ffffff" stroke="#e2ded3" stroke-width="1.5"/>
+    <text x="750" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Store</text>
+    <text x="750" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">server/store.js</text>
+  </g>
+  <g>
+    <rect x="895" y="40" width="150" height="46" rx="8" fill="#fff8ed" stroke="#b45309" stroke-width="1.5"/>
+    <text x="970" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Triage Engine</text>
+    <text x="970" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">server/triage.js</text>
+  </g>
+  <g>
+    <ellipse cx="1180" cy="50" rx="75" ry="10" fill="#f4f8ec" stroke="#3f6212" stroke-width="1.5"/>
+    <path d="M1105,50 L1105,72 A75,10 0 0 0 1255,72 L1255,50" fill="#f4f8ec" stroke="#3f6212" stroke-width="1.5"/>
+    <line x1="1105" y1="50" x2="1105" y2="72" stroke="#3f6212" stroke-width="1.5"/>
+    <line x1="1255" y1="50" x2="1255" y2="72" stroke="#3f6212" stroke-width="1.5"/>
+    <text x="1180" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2c4a0d">Site Register</text>
+  </g>
+
+  <!-- messages -->
+  <!-- 1 -->
+  <line x1="90" y1="120" x2="304" y2="120" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="98" y="114" font-size="11.5" fill="#1c1b18">Search house (address / name / phone)</text>
+
+  <!-- 2 -->
+  <line x1="310" y1="150" x2="524" y2="150" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="318" y="144" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">GET /api/sites?q=...</text>
+
+  <!-- 3 -->
+  <line x1="530" y1="180" x2="744" y2="180" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="538" y="174" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">listSites(query)</text>
+
+  <!-- 4 -->
+  <line x1="750" y1="210" x2="1174" y2="210" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="758" y="204" font-size="11.5" fill="#1c1b18">filter by address / name / phone</text>
+
+  <!-- 5 return -->
+  <line x1="1180" y1="240" x2="756" y2="240" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="900" y="234" text-anchor="middle" font-size="11.5" fill="#4a4740">matching sites</text>
+
+  <!-- 6 return -->
+  <line x1="750" y1="266" x2="536" y2="266" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="640" y="260" text-anchor="middle" font-size="11.5" fill="#4a4740">sites[]</text>
+
+  <!-- 7 return -->
+  <line x1="530" y1="292" x2="316" y2="292" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="420" y="286" text-anchor="middle" font-size="11.5" fill="#4a4740">200 sites[]</text>
+
+  <!-- 8 return to admin -->
+  <line x1="310" y1="318" x2="96" y2="318" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="200" y="312" text-anchor="middle" font-size="11.5" fill="#4a4740">show matching houses</text>
+
+  <!-- 9 -->
+  <line x1="90" y1="352" x2="304" y2="352" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="98" y="346" font-size="11.5" fill="#1c1b18">Select house</text>
+
+  <!-- UI self note -->
+  <rect x="330" y="366" width="330" height="40" rx="6" fill="#eef4f8" stroke="#bcdcea" stroke-width="1.2"/>
+  <text x="345" y="382" font-size="11" fill="#1d5f7a">
+    <tspan x="345" dy="0">Show warranty / commissioning /</tspan>
+    <tspan x="345" dy="14">service-contract status immediately</tspan>
+  </text>
+
+  <!-- 11 -->
+  <line x1="90" y1="432" x2="304" y2="432" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="98" y="422" font-size="11.5" fill="#1c1b18">
+    <tspan x="98" dy="0">Fill fault type, error code, photos,</tspan>
+    <tspan x="98" dy="13">symptoms, safety checkboxes → Create ticket</tspan>
+  </text>
+
+  <!-- 12 -->
+  <line x1="310" y1="466" x2="524" y2="466" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="318" y="460" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">POST /api/tickets {...}</text>
+
+  <!-- 13 -->
+  <line x1="530" y1="496" x2="744" y2="496" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="538" y="490" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">createTicket(input)</text>
+
+  <!-- 14 -->
+  <line x1="750" y1="526" x2="1174" y2="526" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="758" y="520" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">getSite(siteId)</text>
+
+  <!-- 15 return -->
+  <line x1="1180" y1="552" x2="756" y2="552" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="960" y="546" text-anchor="middle" font-size="11.5" fill="#4a4740">site record</text>
+
+  <!-- Store self: get prior tickets -->
+  <path d="M750,578 C830,578 830,606 754,606" fill="none" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="762" y="596" font-size="11.5" fill="#1c1b18">get prior tickets for this site (90-day window)</text>
+
+  <!-- 17 -->
+  <line x1="750" y1="632" x2="964" y2="632" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="758" y="626" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">triage(site, report, history)</text>
+
+  <!-- alt frame -->
+  <rect x="720" y="650" width="490" height="220" fill="none" stroke="#767268" stroke-width="1.3"/>
+  <path d="M720,650 L775,650 L775,665 L765,675 L720,675 Z" fill="#eeeae0" stroke="#767268" stroke-width="1"/>
+  <text x="728" y="666" font-size="10.5" font-weight="700" fill="#1c1b18">alt</text>
+  <text x="800" y="666" font-size="11" fill="#1c1b18">[gas smell or CO alarm]</text>
+  <line x1="720" y1="712" x2="1210" y2="712" stroke="#767268" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="728" y="726" font-size="11" fill="#1c1b18">[else: commissioning date missing]</text>
+  <line x1="720" y1="770" x2="1210" y2="770" stroke="#767268" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="728" y="784" font-size="11" fill="#1c1b18">[else: evaluate rule cascade RULE_03..RULE_09]</text>
+
+  <line x1="970" y1="696" x2="756" y2="696" stroke="#a11b1b" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="860" y="690" text-anchor="middle" font-size="11" fill="#a11b1b">RULE_01/02 — emergency, P1, human callback</text>
+
+  <line x1="970" y1="752" x2="756" y2="752" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="860" y="746" text-anchor="middle" font-size="11" fill="#b45309">RULE_08 — route to back-office review</text>
+
+  <line x1="970" y1="826" x2="756" y2="826" stroke="#4a4740" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="860" y="810" text-anchor="middle" font-size="11" fill="#4a4740">
+    <tspan x="860" dy="0">party, priority, chargeable,</tspan>
+    <tspan x="860" dy="13">ruleId, explanation</tspan>
+  </text>
+
+  <!-- after alt -->
+  <line x1="970" y1="900" x2="756" y2="900" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="860" y="894" text-anchor="middle" font-size="11" fill="#4a4740">+ repeat-fault flag, + evidence completeness</text>
+
+  <!-- Store self: persist -->
+  <path d="M750,926 C840,926 840,954 754,954" fill="none" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow2)"/>
+  <text x="762" y="944" font-size="11.5" fill="#1c1b18">persist ticket → data/tickets.json</text>
+
+  <!-- return chain -->
+  <line x1="750" y1="984" x2="536" y2="984" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="640" y="978" text-anchor="middle" font-size="11.5" fill="#4a4740">ticket</text>
+
+  <line x1="530" y1="1012" x2="316" y2="1012" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="420" y="1006" text-anchor="middle" font-size="11.5" fill="#4a4740">201 {ticket}</text>
+
+  <line x1="310" y1="1044" x2="96" y2="1044" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow2d)"/>
+  <text x="200" y="1032" text-anchor="middle" font-size="11">
+    <tspan x="200" dy="0" fill="#4a4740">show assigned party, priority,</tspan>
+    <tspan x="200" dy="13" fill="#4a4740">chargeable status, explanation</tspan>
+  </text>
+</svg>

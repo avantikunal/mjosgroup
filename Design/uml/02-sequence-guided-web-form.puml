@@ -1,0 +1,47 @@
+@startuml 02-sequence-guided-web-form
+title Guided Web Form — Ticket Creation (Sequence Diagram)
+
+actor "Office Admin" as Admin
+participant "Browser UI\n(public/app.js)" as UI
+participant "HTTP Server\n(server/index.js)" as API
+participant "Store\n(server/store.js)" as Store
+participant "Triage Engine\n(server/triage.js)" as Triage
+database "Site Register\n(server/data.js)" as Sites
+
+Admin -> UI: Search house (address / name / phone)
+UI -> API: GET /api/sites?q=...
+API -> Store: listSites(query)
+Store -> Sites: filter
+Sites --> Store: matching sites
+Store --> API: sites[]
+API --> UI: 200 sites[]
+UI --> Admin: Show matching houses
+
+Admin -> UI: Select house
+UI --> Admin: Show warranty / commissioning\n/ service-contract status
+
+Admin -> UI: Fill fault type, error code,\nphotos, symptoms, safety checkboxes
+Admin -> UI: Click "Create ticket"
+UI -> API: POST /api/tickets {siteId, faultTypeId, ...}
+API -> Store: createTicket(input)
+Store -> Sites: getSite(siteId)
+Sites --> Store: site record
+Store -> Store: get prior tickets for site
+Store -> Triage: triage(site, report, history)
+
+alt gas smell or CO alarm flagged
+  Triage --> Store: RULE_01/RULE_02\nemergency, P1, human callback
+else commissioning date missing
+  Triage --> Store: RULE_08\nback-office review
+else
+  Triage -> Triage: evaluate rule cascade\n(RULE_03..RULE_09)
+  Triage --> Store: party, priority, chargeable,\nruleId, explanation
+end
+Triage --> Store: + repeat-fault flag,\n+ evidence completeness
+
+Store -> Store: persist ticket to\ndata/tickets.json
+Store --> API: ticket
+API --> UI: 201 {ticket}
+UI --> Admin: Show assigned party, priority,\nchargeable status, explanation
+
+@enduml

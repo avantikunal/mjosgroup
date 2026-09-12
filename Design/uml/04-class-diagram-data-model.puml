@@ -1,0 +1,145 @@
+@startuml 04-class-diagram-data-model
+title Aftercare Workbench — Data Model (Class Diagram)
+
+class Site {
+  +siteId: string
+  +customerName: string
+  +phone: string
+  +email: string
+  +address: string
+  +eircode: string
+  +systemType: string
+  +manufacturer: string
+  +modelNumber: string
+  +serialNumber: string
+  +installedBy: string
+  +installDate: date
+  +commissioningDate: date?
+  +warrantyPartsMonths: number
+  +warrantyLabourMonths: number
+  +serviceContract: ServiceContract
+  +seaiGrantScheme: boolean
+  +lastServiceDate: date?
+  +vulnerableOccupant: boolean
+  +notes: string
+}
+
+class ServiceContract {
+  +active: boolean
+  +plan: string?
+  +expiresAt: date?
+}
+
+class FaultReport {
+  +faultTypeId: string
+  +errorCode: string?
+  +photos: string[]
+  +symptoms: string
+  +gasSmell: boolean
+  +coAlarm: boolean
+  +channel: "phone" | "web-form" | "voice-ai"
+  +reportedAt: datetime
+}
+
+class Ticket {
+  +ticketId: string
+  +siteId: string
+  +reportedBy: string
+  +openedAt: datetime
+  +state: TicketState
+  +priority: "P1"|"P2"|"P3"|"P4"
+  +assignedParty: string
+  +chargeable: boolean?
+  +chargeReason: string?
+  +ruleId: string
+  +explanation: string
+  +requiresHumanCallback: boolean
+  +dataQuality: "complete"|"incomplete"
+  +missingFields: string[]
+  +repeatFault: boolean
+  +repeatFaultCount: number
+}
+
+class FaultType {
+  +id: string
+  +label: string
+  +department: string
+  +priority: string
+  +aiMode: "deterministic-candidate"|"assist"|"human"|"prohibited"
+  +requiresErrorCode: boolean
+  +requiresPhoto: boolean
+  +likelyManufacturerDefect: boolean
+  +coveredByServiceContract: boolean?
+}
+
+class Party {
+  +id: string
+  +label: string
+  +accountableRole: string
+  +restricted: boolean
+  +chargeableDefault: boolean?
+}
+
+class TriageDecision <<pure function result>> {
+  +ruleId: string
+  +party: string
+  +priority: string
+  +chargeable: boolean?
+  +chargeReason: string?
+  +aiMode: string
+  +explanation: string
+  +requiresHumanCallback: boolean
+  +dataQuality: string
+  +missingFields: string[]
+  +repeatFault: boolean
+}
+
+class VoiceIntakeDraft <<classifier output>> {
+  +transcript: string
+  +faultType: ScoredValue
+  +errorCode: string?
+  +site: ScoredMatch?
+  +safetyFlags: SafetyFlags
+  +requiresHumanReview: boolean
+}
+
+class ScoredValue {
+  +value: string
+  +score: number
+  +evidence: string[]
+}
+
+class ScoredMatch {
+  +siteId: string
+  +score: number
+  +evidence: string[]
+}
+
+enum TicketState {
+  New
+  Triage
+  AwaitingInfo
+  Scheduled
+  EnRoute
+  OnSite
+  AwaitingParts
+  Resolved
+  InvoicePending
+  Closed
+  Reopened
+}
+
+Site "1" *-- "1" ServiceContract : has
+Site "1" o-- "0..*" Ticket : has aftercare history
+Ticket "1" o-- "1" FaultReport : logs
+Ticket ..> FaultType : faultTypeId refers to
+Ticket ..> Party : assignedParty refers to
+Ticket "1" -- "1" TriageDecision : created from
+FaultReport ..> Site : triaged against
+VoiceIntakeDraft ..> FaultType : proposes
+VoiceIntakeDraft ..> Site : proposes match to
+VoiceIntakeDraft *-- ScoredValue
+VoiceIntakeDraft *-- ScoredMatch
+Ticket -- TicketState : state
+
+@enduml

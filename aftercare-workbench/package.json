@@ -1,0 +1,12 @@
+{
+  "name": "mos-aftercare-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Guided intake + triage rules engine + AI voice-intake demo for MOS Mechanical aftercare.",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

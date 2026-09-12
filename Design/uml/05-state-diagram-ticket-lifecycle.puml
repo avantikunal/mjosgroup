@@ -1,0 +1,36 @@
+@startuml 05-state-diagram-ticket-lifecycle
+title Ticket Lifecycle (State Diagram)
+
+[*] --> New : created by guided form\nor confirmed voice draft
+
+New --> Triage : missing commissioning data\n(RULE_08) or low-confidence\nvoice draft needs review
+New --> AwaitingInfo : evidence incomplete\n(missing error code / photo)
+New --> Scheduled : party & priority assigned,\nvisit booked
+
+Triage --> Scheduled : back-office verifies\nwarranty / party manually
+AwaitingInfo --> Scheduled : missing evidence\nsupplied
+
+Scheduled --> EnRoute : technician dispatched
+EnRoute --> OnSite : technician arrives
+OnSite --> AwaitingParts : part required,\nnot on the van
+OnSite --> Resolved : fault fixed on this visit
+AwaitingParts --> Scheduled : part received,\nre-booked
+
+Resolved --> InvoicePending : chargeable == true
+Resolved --> Closed : chargeable == false\n(warranty / contract / referred)
+
+InvoicePending --> Closed : invoice issued
+
+Closed --> Reopened : customer reports\nthe same fault again
+Reopened --> Triage : re-enters triage;\nRULE_10 repeat-fault flag\nlikely applies
+
+Closed --> [*]
+
+note right of New
+  Emergency tickets (RULE_01/RULE_02)
+  skip this lifecycle entirely and are
+  handled outside the ticketing flow —
+  see 01-end-to-end-flow.
+end note
+
+@enduml

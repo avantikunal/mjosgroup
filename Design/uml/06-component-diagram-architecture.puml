@@ -1,0 +1,54 @@
+@startuml 06-component-diagram-architecture
+title Aftercare Workbench — Component / Architecture Diagram
+
+actor "Office Admin /\nTechnician / Manager" as User
+
+package "Browser (no build step)" {
+  [index.html]
+  [styles.css]
+  [app.js\n(vanilla ES module)] as AppJS
+}
+
+package "Node process — server/index.js\n(zero npm dependencies)" {
+  [HTTP + static file server] as HTTP
+  [reference.js\npolicy config] as Reference
+  [triage.js\nrules engine] as Triage
+  [classifier.js\nvoice-intake stub] as Classifier
+  [store.js\nin-memory + persistence] as Store
+  [data.js\nseed data] as Data
+}
+
+database "data/tickets.json" as JSONFile
+
+User --> AppJS : uses (mouse / keyboard / mic)
+AppJS --> HTTP : fetch() JSON over HTTP\n(same-origin, CSP-restricted)
+HTTP --> Store : listSites / getSite /\nlistTickets / createTicket / updateTicket
+HTTP --> Classifier : classifyIntake(transcript, sites)
+HTTP --> Reference : read fault types, priorities,\nparties, states, thresholds
+Store --> Triage : triage(site, report, history)
+Triage --> Reference : read rule inputs
+Store --> Data : seed on first boot
+Store --> JSONFile : read / write-through persistence
+Classifier --> Reference : (fault type ids)
+
+note bottom of AppJS
+  Renders all customer-supplied text as
+  DOM text nodes, never innerHTML — closes
+  off stored XSS from fault descriptions
+  or voice transcripts.
+end note
+
+note bottom of Triage
+  Pure function: (site, report, history) -> decision.
+  Same inputs always produce the same
+  party / priority / chargeable outcome.
+end note
+
+note bottom of Classifier
+  Deterministic regex/keyword stub.
+  Swappable behind the same interface
+  for a real ASR + LLM pipeline later
+  (see docs/PRD.md §9).
+end note
+
+@enduml

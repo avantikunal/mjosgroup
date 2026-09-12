@@ -1,0 +1,138 @@
+<svg viewBox="0 0 1320 830" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1c1b18"/>
+    </marker>
+    <marker id="arrow3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#767268"/>
+    </marker>
+  </defs>
+  <rect width="1320" height="830" fill="#ffffff"/>
+  <text x="660" y="26" text-anchor="middle" font-size="18" font-weight="700" fill="#1c1b18">Voice Intake (AI Assistant) — Extraction &amp; Safety Gate</text>
+
+  <!-- lifelines -->
+  <line x1="80" y1="90" x2="80" y2="790" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="250" y1="90" x2="250" y2="790" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="450" y1="90" x2="450" y2="790" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="650" y1="90" x2="650" y2="790" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="850" y1="90" x2="850" y2="790" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="1080" y1="90" x2="1080" y2="790" stroke="#c9c4b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- actor: Customer -->
+  <circle cx="80" cy="46" r="9" fill="none" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="80" y1="55" x2="80" y2="75" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="65" y1="63" x2="95" y2="63" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="80" y1="75" x2="66" y2="90" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="80" y1="75" x2="94" y2="90" stroke="#1c1b18" stroke-width="1.6"/>
+  <text x="80" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Customer</text>
+
+  <!-- actor: Office Admin -->
+  <circle cx="250" cy="46" r="9" fill="none" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="250" y1="55" x2="250" y2="75" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="235" y1="63" x2="265" y2="63" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="250" y1="75" x2="236" y2="90" stroke="#1c1b18" stroke-width="1.6"/>
+  <line x1="250" y1="75" x2="264" y2="90" stroke="#1c1b18" stroke-width="1.6"/>
+  <text x="250" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Office Admin</text>
+
+  <!-- participant boxes -->
+  <rect x="375" y="40" width="150" height="46" rx="8" fill="#fdf3ec" stroke="#b3541e" stroke-width="1.5"/>
+  <text x="450" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Browser UI</text>
+  <text x="450" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">public/app.js</text>
+
+  <rect x="575" y="40" width="150" height="46" rx="8" fill="#ffffff" stroke="#e2ded3" stroke-width="1.5"/>
+  <text x="650" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">HTTP Server</text>
+  <text x="650" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">server/index.js</text>
+
+  <rect x="775" y="40" width="150" height="46" rx="8" fill="#ffffff" stroke="#e2ded3" stroke-width="1.5"/>
+  <text x="850" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Store</text>
+  <text x="850" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">server/store.js</text>
+
+  <rect x="985" y="40" width="190" height="46" rx="8" fill="#fff8ed" stroke="#b45309" stroke-width="1.5"/>
+  <text x="1080" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#1c1b18">Classifier (stub)</text>
+  <text x="1080" y="75" text-anchor="middle" font-size="10.5" fill="#767268" font-family="ui-monospace, Consolas, monospace">server/classifier.js</text>
+
+  <!-- 1 -->
+  <line x1="80" y1="122" x2="244" y2="122" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="88" y="116" font-size="11.5" fill="#1c1b18">Describes the fault over the phone</text>
+
+  <!-- 2 -->
+  <line x1="250" y1="156" x2="444" y2="156" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="258" y="145" font-size="11.5" fill="#1c1b18">
+    <tspan x="258" dy="0">Speaks near mic (Web Speech API)</tspan>
+    <tspan x="258" dy="13">or types the transcript</tspan>
+  </text>
+
+  <!-- 3 UI self -->
+  <path d="M450,182 C530,182 530,206 454,206" fill="none" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="462" y="198" font-size="11.5" fill="#1c1b18">Live transcription fills the transcript field</text>
+
+  <!-- 4 -->
+  <line x1="250" y1="232" x2="444" y2="232" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="258" y="226" font-size="11.5" fill="#1c1b18">Click "Extract details"</text>
+
+  <!-- 5 -->
+  <line x1="450" y1="262" x2="644" y2="262" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="458" y="256" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">POST /api/voice-intake {transcript}</text>
+
+  <!-- 6 -->
+  <line x1="650" y1="290" x2="844" y2="290" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="658" y="284" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">listSites()</text>
+
+  <!-- 7 return -->
+  <line x1="850" y1="314" x2="656" y2="314" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow3d)"/>
+  <text x="750" y="308" text-anchor="middle" font-size="11.5" fill="#4a4740">sites[]</text>
+
+  <!-- 8 -->
+  <line x1="650" y1="342" x2="1074" y2="342" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="658" y="336" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#1c1b18">classifyIntake(transcript, sites)</text>
+
+  <!-- classifier self loops -->
+  <path d="M1080,364 C1180,364 1180,384 1084,384" fill="none" stroke="#1c1b18" stroke-width="1.3" marker-end="url(#arrow3)"/>
+  <text x="912" y="378" font-size="11" fill="#1c1b18">match fault-type patterns (regex, confidence-scored)</text>
+
+  <path d="M1080,394 C1180,394 1180,414 1084,414" fill="none" stroke="#1c1b18" stroke-width="1.3" marker-end="url(#arrow3)"/>
+  <text x="900" y="408" font-size="11" fill="#1c1b18">match candidate site (phone / name / address words)</text>
+
+  <path d="M1080,424 C1180,424 1180,444 1084,444" fill="none" stroke="#1c1b18" stroke-width="1.3" marker-end="url(#arrow3)"/>
+  <text x="930" y="438" font-size="11" fill="#1c1b18">detect safety flags (gas / CO phrases)</text>
+
+  <!-- 12 return -->
+  <line x1="1080" y1="470" x2="656" y2="470" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow3d)"/>
+  <text x="870" y="464" text-anchor="middle" font-size="11" fill="#4a4740">{faultType, errorCode, site, safetyFlags, requiresHumanReview}</text>
+
+  <!-- 13 return -->
+  <line x1="650" y1="496" x2="456" y2="496" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow3d)"/>
+  <text x="553" y="490" text-anchor="middle" font-size="11.5" fill="#4a4740">200 draft</text>
+
+  <!-- 14 return -->
+  <line x1="450" y1="522" x2="256" y2="522" stroke="#767268" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow3d)"/>
+  <text x="353" y="516" text-anchor="middle" font-size="11.5" fill="#4a4740">show draft with confidence scores</text>
+
+  <!-- alt frame -->
+  <rect x="60" y="545" width="1020" height="235" fill="none" stroke="#767268" stroke-width="1.3"/>
+  <path d="M60,545 L112,545 L112,560 L102,570 L60,570 Z" fill="#eeeae0" stroke="#767268" stroke-width="1"/>
+  <text x="68" y="561" font-size="10.5" font-weight="700" fill="#1c1b18">alt</text>
+  <text x="140" y="561" font-size="11" font-weight="700" fill="#a11b1b">[safety flag detected]</text>
+
+  <line x1="450" y1="594" x2="256" y2="594" stroke="#a11b1b" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow3d)"/>
+  <text x="353" y="584" text-anchor="middle" font-size="11" fill="#a11b1b">
+    <tspan x="353" dy="0">BLOCKED — handle as an emergency</tspan>
+    <tspan x="353" dy="13">call, action disabled</tspan>
+  </text>
+
+  <line x1="60" y1="620" x2="1080" y2="620" stroke="#767268" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="68" y="635" font-size="11" font-weight="700" fill="#2c4a0d">[else: confident fault type + matched site]</text>
+
+  <line x1="250" y1="662" x2="444" y2="662" stroke="#1c1b18" stroke-width="1.4" marker-end="url(#arrow3)"/>
+  <text x="258" y="656" font-size="11" fill="#1c1b18">Click "Review in guided form"</text>
+
+  <path d="M450,674 C540,674 540,694 454,694" fill="none" stroke="#1c1b18" stroke-width="1.3" marker-end="url(#arrow3)"/>
+  <text x="462" y="686" font-size="11" fill="#1c1b18">Pre-fill guided form (site, fault type, error code, transcript)</text>
+  <text x="470" y="706" font-size="10.5" font-style="italic" fill="#767268">continues as the Guided Web Form sequence (see 02)</text>
+
+  <line x1="60" y1="720" x2="1080" y2="720" stroke="#767268" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="68" y="735" font-size="11" font-weight="700" fill="#7a4109">[else: low confidence or no site match]</text>
+
+  <line x1="450" y1="762" x2="256" y2="762" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow3d)"/>
+  <text x="353" y="756" text-anchor="middle" font-size="11" fill="#7a4109">Flagged "needs human review" — nothing pre-filled</text>
+</svg>

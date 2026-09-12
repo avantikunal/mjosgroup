@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MOS Aftercare Workbench</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="demo-banner">
+    <strong>PROTOTYPE</strong>
+    <span>Sample sites &amp; tickets · nothing is sent to real customers</span>
+  </div>
+  <header class="app">
+    <div class="brand">
+      <div class="brand-mark">MOS</div>
+      <div class="title">
+        <div><strong>MOS Mechanical</strong> — Aftercare Workbench</div>
+        <div class="muted">Part of MJOS Group</div>
+      </div>
+    </div>
+    <div class="header-spacer"></div>
+    <label class="user-switch">
+      Viewing as
+      <select id="user-select"></select>
+    </label>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="queue">Aftercare Queue</button>
+    <button class="tab" data-view="intake">New Ticket (Guided Form)</button>
+    <button class="tab" data-view="voice">Voice Intake (AI Assistant)</button>
+    <button class="tab" data-view="overview">Overview</button>
+  </nav>
+
+  <main id="app"></main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

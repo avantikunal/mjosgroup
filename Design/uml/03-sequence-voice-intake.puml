@@ -1,0 +1,36 @@
+@startuml 03-sequence-voice-intake
+title Voice Intake (AI Assistant) — Extraction &amp; Safety Gate (Sequence Diagram)
+
+actor Customer
+actor "Office Admin" as Admin
+participant "Browser UI\n(public/app.js)" as UI
+participant "HTTP Server\n(server/index.js)" as API
+participant "Store\n(server/store.js)" as Store
+participant "Classifier (stub)\n(server/classifier.js)" as Classifier
+
+Customer -> Admin: Describes the fault over the phone
+Admin -> UI: Speaks near mic (Web Speech API)\nor types the transcript
+UI -> UI: Live transcription fills the\ntranscript field
+Admin -> UI: Click "Extract details"
+UI -> API: POST /api/voice-intake {transcript}
+API -> Store: listSites()
+Store --> API: sites[]
+API -> Classifier: classifyIntake(transcript, sites)
+Classifier -> Classifier: match fault-type patterns\n(regex, confidence-scored)
+Classifier -> Classifier: match candidate site\n(phone number / name / address words)
+Classifier -> Classifier: detect safety flags\n(gas smell / CO alarm phrases)
+Classifier --> API: {faultType, errorCode, site,\nsafetyFlags, requiresHumanReview}
+API --> UI: 200 draft
+UI --> Admin: Show draft with confidence scores
+
+alt safety flag detected
+  UI --> Admin: BLOCKED — handle as an\nemergency call, action disabled
+else confident fault type + matched site
+  Admin -> UI: Click "Review in guided form"
+  UI -> UI: Pre-fill guided form\n(site, fault type, error code, transcript)
+  note right: continues as the Guided Web Form\nsequence (see 02-sequence-guided-web-form)
+else low confidence or no site match
+  UI --> Admin: Flagged "needs human review",\nnothing pre-filled automatically
+end
+
+@enduml

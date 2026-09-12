@@ -1,0 +1,94 @@
+@startuml 01-end-to-end-flow
+title MOS Aftercare — End-to-End Flow (Activity Diagram)
+
+|Customer|
+start
+:Reports a fault
+(phone call, web form,
+or speaks to the voice assistant);
+
+|Intake (Web Form / Voice Assistant)|
+if (Channel?) then (Voice)
+  :Transcribe the call;
+  :Extract fault type, house match,
+  error code (stub classifier,
+  confidence-scored);
+else (Web Form)
+  :Search & select the house;
+  :Show warranty / commissioning
+  status immediately;
+endif
+
+if (Safety phrase detected?\n(gas smell / CO alarm)) then (yes)
+  #Pink:RULE_01 / RULE_02
+  Emergency protocol, P1,
+  mandatory human callback.
+  Never auto-processed by AI.;
+  stop
+else (no)
+endif
+
+:Guided, fault-type-specific
+questionnaire — error code / photo
+required where the fault type
+needs it;
+
+|Triage Engine|
+:Look up house record —
+installer, commissioning date,
+warranty terms, service contract;
+
+if (Commissioning date on file?) then (no)
+  #Bisque:RULE_08 — route to
+  back-office for manual
+  warranty verification;
+  note right: priority escalated one level
+else (yes)
+  if (MOS installed, <=30 days\nsince commissioning?) then (yes)
+    :RULE_04 — MOS labour warranty,
+    no charge;
+  elseif (Installed by a third party?) then (yes)
+    :RULE_07 — refer to the
+    original installer;
+  elseif (Active service contract\ncovers this fault?) then (yes)
+    :RULE_06 — covered by
+    service contract;
+  elseif (In parts warranty AND a\nlikely manufacturer defect?) then (yes)
+    :RULE_03 — manufacturer
+    warranty claim;
+  elseif (Labour warranty\nstill active?) then (yes)
+    :RULE_05 — MOS labour warranty,
+    no charge;
+  else (none apply)
+    :RULE_09 — MOS chargeable
+    repair;
+  endif
+endif
+
+:Check for repeat faults at this
+site in the last 90 days;
+if (2+ prior tickets for the\nsame fault?) then (yes)
+  :RULE_10 — flag repeat fault,
+  raise priority one level;
+else (no)
+endif
+
+:Check required evidence for this
+fault type (error code / photo);
+if (Required evidence missing?) then (yes)
+  :Mark ticket dataQuality =
+  "incomplete";
+else (no)
+endif
+
+|Office Admin / Field Technician|
+:Ticket created — party, priority,
+chargeable flag, and rule
+explanation attached;
+:Schedule & dispatch according
+to priority and assigned party;
+:Technician attends, resolves,
+and closes the ticket;
+stop
+
+@enduml

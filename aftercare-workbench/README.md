@@ -47,24 +47,26 @@ See "Why this stack" in the PRD for the full rationale and the trade-offs accept
 
 ## Demo script
 
-The app opens on a **Demo Walkthrough** tab with five one-click scenario cards —
-each sets up a scenario end-to-end and jumps to where the result lands, with a
-"say this" line and a "watch for this" line for whoever is presenting. A **Reset
-demo data** button on that tab clears anything created during the demo and restores
-the original two sample tickets, so it can be re-run as many times as needed.
+There's no separate demo tab — every tab demos and explains itself in place, via
+its own **"▶ Demo: …"** button(s) at the top:
 
-The five scenarios (also runnable by hand, if you'd rather drive manually):
+- **Aftercare Queue** — "▶ Run demo: explain this ticket" selects a good example
+  ticket (preferring one with missing evidence or a repeat-fault flag) and narrates
+  what the priority/party badges and rule explanation mean. It's a toggle: click a
+  different ticket while it's on and the narration follows your selection, so it
+  never goes stale. "Reset demo data" clears everything created during the demo and
+  restores the original two sample tickets.
+- **New Ticket (Guided Form)** — three buttons run the intake end-to-end (pick the
+  house, fill the fault, submit) and land the result inline on the same tab:
+  *data-gap safeguard* (`Grainne Lynch`, no commissioning date → routed to
+  back-office rather than guessing warranty status), *manufacturer warranty claim*
+  (`Aidan Byrne`, heat pump fault `E4`, still in parts warranty), and *chargeable
+  repair* (`Sean & Orla Whelan`, out of warranty, no service contract).
+- **Voice Intake** — two buttons run the extraction end-to-end: *confident match*
+  (a clean transcript naming the customer, fault and phone number) and *safety gate*
+  (any mention of gas/CO, showing the action gets blocked regardless of confidence).
+- **Overview** — "▶ Run demo: explain these numbers" narrates the current stat
+  cards using live counts, so it stays accurate as tickets are created elsewhere.
 
-1. **Data-gap safeguard** — search `Grainne Lynch` (site with no commissioning date
-   on file) and log a fault; note it routes to back-office for manual verification
-   rather than guessing a warranty decision.
-2. **Manufacturer warranty claim** — search `Aidan Byrne`, log a heat pump fault
-   with error code `E4`; note it's assigned to the manufacturer warranty queue.
-3. **Chargeable repair** — search `Sean & Orla Whelan` (out of warranty, no service
-   contract) and log an intermittent heating fault; note it's flagged chargeable.
-4. **Voice Intake** — paste or speak: *"Hi it's Maura Kelly, no hot water since this
-   morning, my number is 087 555 0102"* and click Extract details, then Review in
-   guided form.
-5. **Voice Intake (safety gate)** — paste: *"I think I can smell gas near the boiler"*
-   and click Extract details — note the action is blocked with an emergency-handling
-   instruction instead of a ticket draft.
+Each of these can also be driven by hand instead — search for a site, fill in the
+form, or paste a transcript yourself. "Reset demo data" is available on every tab.

@@ -14,6 +14,7 @@ const url = require('url');
 
 const { REFERENCE } = require('./reference');
 const { classifyIntake } = require('./classifier');
+const { SESSION_USERS } = require('./session');
 const store = require('./store');
 
 const PORT = process.env.PORT || 4173;
@@ -84,12 +85,6 @@ function serveStatic(req, res, pathname) {
   });
 }
 
-const SESSION_USERS = [
-  { id: 'admin.office', displayName: 'Niamh (Office Admin)', role: 'office-admin', permissions: ['ticket:read', 'ticket:create', 'ticket:update', 'site:read', 'voice-intake:use'] },
-  { id: 'tech.field', displayName: 'Colm (Field Technician)', role: 'technician', permissions: ['ticket:read', 'ticket:update', 'site:read'] },
-  { id: 'mgr.ops', displayName: 'Sile (Operations Manager)', role: 'manager', permissions: ['ticket:read', 'ticket:create', 'ticket:update', 'site:read', 'voice-intake:use', 'ticket:override'] },
-];
-
 async function handleApi(req, res, pathname, query) {
   if (pathname === '/api/session' && req.method === 'GET') {
     return sendJson(res, 200, { currentUser: SESSION_USERS[0], users: SESSION_USERS });
@@ -146,6 +141,11 @@ async function handleApi(req, res, pathname, query) {
     const sites = store.listSites();
     const result = classifyIntake(body.transcript || '', sites);
     return sendJson(res, 200, result);
+  }
+
+  if (pathname === '/api/reset' && req.method === 'POST') {
+    const tickets = store.resetToSeed();
+    return sendJson(res, 200, { tickets });
   }
 
   sendJson(res, 404, { error: 'Not found' });

@@ -10,7 +10,7 @@
  */
 
 const state = {
-  view: 'queue',
+  view: 'demo',
   currentUser: null,
   users: [],
   reference: null,
@@ -87,21 +87,160 @@ function renderUserSwitch() {
 
 function wireTabs() {
   document.querySelectorAll('.tab').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.view = btn.dataset.view;
-      render();
-    });
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
   });
+}
+
+function switchView(view) {
+  state.view = view;
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
+  render();
 }
 
 function render() {
   main().textContent = '';
-  if (state.view === 'queue') main().appendChild(renderQueueView());
+  if (state.view === 'demo') main().appendChild(renderDemoView());
+  else if (state.view === 'queue') main().appendChild(renderQueueView());
   else if (state.view === 'intake') main().appendChild(renderIntakeView());
   else if (state.view === 'voice') main().appendChild(renderVoiceView());
   else if (state.view === 'overview') main().appendChild(renderOverviewView());
+}
+
+// -------------------------------------------------------------------------- demo walkthrough
+
+const DEMO_SCENARIOS = [
+  {
+    id: 'data-gap',
+    title: '1 · Data-gap safeguard',
+    say: 'This house has no commissioning date on file — a real gap the current spreadsheet process leaves open.',
+    result: 'Watch: instead of guessing warranty status, the ticket is routed to back-office for manual verification.',
+    action: () =>
+      runIntakeScenario({ customerName: 'Grainne Lynch', faultTypeId: 'MVHR-FILTER', symptoms: 'Ventilation unit making noise, unsure if still under warranty.' }),
+  },
+  {
+    id: 'mfr-warranty',
+    title: '2 · Manufacturer warranty claim',
+    say: "Aidan Byrne's heat pump is throwing an error code and is still inside its parts warranty window.",
+    result: 'Watch: it’s automatically assigned as a manufacturer warranty claim — not billed to MOS or the customer.',
+    action: () =>
+      runIntakeScenario({ customerName: 'Aidan Byrne', faultTypeId: 'HP-FAULT', errorCode: 'E4', symptoms: 'Outdoor unit flashing red light, no heat.' }),
+  },
+  {
+    id: 'chargeable',
+    title: '3 · Chargeable repair',
+    say: 'The Whelans’ heat pump is out of warranty with no service contract — a common source of billing disputes today.',
+    result: 'Watch: it’s correctly flagged chargeable up front, before anyone drives out to the job.',
+    action: () =>
+      runIntakeScenario({ customerName: 'Sean & Orla Whelan', faultTypeId: 'HEAT-INTERMIT', symptoms: 'Heating cuts out intermittently, especially in the evening.' }),
+  },
+  {
+    id: 'voice-happy',
+    title: '4 · Voice intake — confident match',
+    say: 'Now the AI voice assistant: this is what a phone call transcript looks like.',
+    result: 'Watch: the house, fault type, and phone number are all extracted with confidence scores, ready for one-click review.',
+    action: () =>
+      runVoiceScenario("Hi it's Maura Kelly, no hot water since this morning, my number is 087 555 0102"),
+  },
+  {
+    id: 'voice-safety',
+    title: '5 · Voice intake — safety gate',
+    say: 'This is the one that matters most: what happens when gas is mentioned.',
+    result: 'Watch: it’s blocked from automation entirely, regardless of how confident the fault-type match is.',
+    action: () =>
+      runVoiceScenario('I think I can smell gas near the boiler, please send someone'),
+  },
+];
+
+async function runIntakeScenario({ customerName, faultTypeId, errorCode, symptoms }) {
+  const site = state.sites.find((s) => s.customerName === customerName);
+  if (!site) return;
+  const payload = {
+    siteId: site.siteId,
+    channel: 'web-form',
+    faultTypeId,
+    errorCode: errorCode || '',
+    photos: [],
+    symptoms: symptoms || '',
+    gasSmell: false,
+    coAlarm: false,
+  };
+  const { ticket } = await api('/api/tickets', { method: 'POST', body: JSON.stringify(payload) });
+  state.tickets.unshift(ticket);
+  state.selectedTicketId = ticket.ticketId;
+  switchView('queue');
+}
+
+async function runVoiceScenario(transcript) {
+  state.voice.transcript = transcript;
+  state.voice.draft = await api('/api/voice-intake', { method: 'POST', body: JSON.stringify({ transcript }) });
+  switchView('voice');
+}
+
+function renderDemoView() {
+  const wrap = el('div', { class: 'stack' });
+
+  wrap.appendChild(
+    el('div', { class: 'callout callout-info' }, [
+      el('strong', { text: 'Live demo walkthrough' }),
+      el('span', {
+        text:
+          'Each card below sets up one scenario end-to-end and jumps to where the result shows up — read the "say" line aloud, click "Run", then talk through the "watch for" line once it lands.',
+      }),
+    ])
+  );
+
+  const grid = el('div', { class: 'stack' });
+  for (const scenario of DEMO_SCENARIOS) {
+    const card = el('div', { class: 'panel' }, [
+      el('div', { class: 'panel-header' }, el('h2', { text: scenario.title })),
+      el('div', { class: 'panel-body stack' }, [
+        el('div', {}, [el('strong', { text: 'Say: ' }), el('span', { text: scenario.say })]),
+        el('div', {}, [el('strong', { text: 'Watch for: ' }), el('span', { text: scenario.result })]),
+        el('div', { class: 'actions-row' }, [
+          el('button', {
+            class: 'btn',
+            onclick: async () => {
+              try {
+                await scenario.action();
+              } catch (err) {
+                alert(err.message);
+              }
+            },
+            text: 'Run this scenario',
+          }),
+        ]),
+      ]),
+    ]);
+    grid.appendChild(card);
+  }
+  wrap.appendChild(grid);
+
+  wrap.appendChild(
+    el('div', { class: 'panel' }, [
+      el('div', { class: 'panel-header' }, el('h2', { text: 'Reset between demo runs' })),
+      el('div', { class: 'panel-body' }, [
+        el('div', { class: 'field' }, [
+          el('span', { class: 'hint', text: 'Clears every ticket created during this demo and restores the original two sample tickets — safe to run as many times as you like.' }),
+        ]),
+        el('div', { class: 'actions-row' }, [
+          el('button', {
+            class: 'btn secondary',
+            onclick: async () => {
+              const { tickets } = await api('/api/reset', { method: 'POST' });
+              state.tickets = tickets;
+              state.selectedTicketId = tickets.length ? tickets[0].ticketId : null;
+              state.intake = { site: null, siteQuery: '', lastResult: null };
+              state.voice = { transcript: '', draft: null, listening: false };
+              render();
+            },
+            text: 'Reset demo data',
+          }),
+        ]),
+      ]),
+    ])
+  );
+
+  return wrap;
 }
 
 // -------------------------------------------------------------------------- shared bits

@@ -27,8 +27,16 @@ function load() {
 }
 
 function persist() {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(tickets, null, 2), 'utf8');
+  // Best-effort: on a read-only filesystem (e.g. a serverless deployment) this
+  // fails silently and the store falls back to in-memory-only for that instance,
+  // rather than crashing the request. See docs/PRD.md "Why this stack" and
+  // README.md "Deploying to Vercel" for the trade-off this implies there.
+  try {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(tickets, null, 2), 'utf8');
+  } catch (err) {
+    // no-op
+  }
 }
 
 function enrichTicket(base) {
@@ -131,6 +139,12 @@ function updateTicket(ticketId, patch) {
   return tickets[idx];
 }
 
+function resetToSeed() {
+  tickets = TICKETS.map((t) => enrichTicket(t));
+  persist();
+  return tickets;
+}
+
 load();
 
-module.exports = { listSites, getSite, listTickets, getTicket, createTicket, updateTicket };
+module.exports = { listSites, getSite, listTickets, getTicket, createTicket, updateTicket, resetToSeed };

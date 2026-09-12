@@ -1,5 +1,2 @@
 data/tickets.json
 node_modules/
-
-.vercel
-.env*

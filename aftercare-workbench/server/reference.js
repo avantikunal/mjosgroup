@@ -1,124 +1,79 @@
 /**
- * Reference data for the aftercare workbench.
+ * Reference data for the aftercare workbench — the fault types, priorities, parties
+ * and states, kept as one config so a policy change (a new SLA target, a new fault
+ * category) is a single edit rather than a hunt through the codebase.
  *
- * This is the single place that defines what a fault type, priority, party or state
- * *means*. The triage engine (triage.js) and the UI both read from here rather than
- * hard-coding labels or SLA minutes in more than one place. When MOS changes a policy
- * (e.g. a new SLA target, a new fault category) this file is the only edit required.
+ * The five fault categories and the parties below are taken directly from MOS
+ * Mechanical's own documents (not invented for this prototype):
+ *   - "Aftercare Call Triage Guide"
+ *   - "Aftercare Call Guide — within 1 year warranty"
+ *   - "Aftercare Call Guide — over 1 year warranty"
+ *   - "Heat Pump Decision Tree"
+ * See docs/PRD.md §7 for the rule-by-rule mapping back to these documents.
  */
 
 const FAULT_TYPES = {
-  'SAFETY-GAS': {
-    label: 'Suspected gas smell / leak',
-    department: 'emergency',
-    priority: 'P1',
-    aiMode: 'prohibited',
-    requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
-    coveredByServiceContract: false,
-  },
-  'SAFETY-CO': {
-    label: 'Carbon monoxide alarm activated',
-    department: 'emergency',
-    priority: 'P1',
-    aiMode: 'prohibited',
-    requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
-    coveredByServiceContract: false,
-  },
-  'HEAT-NONE': {
-    label: 'No heating / no hot water',
+  'LEAK-INGRESS': {
+    label: 'Leak / Water Ingress',
+    examples: 'Radiator leak, pipe leak, cylinder leak, overflow, damp / water stains',
     department: 'field-service',
     priority: 'P2',
     aiMode: 'assist',
+    requiresPhoto: true, // "Request Photos / Videos"
     requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
+    requiresSerialNumber: false,
   },
-  'HP-FAULT': {
-    label: 'Heat pump fault code / trip',
+  'NO-HEATING': {
+    label: 'No Heating',
+    examples: 'No heating upstairs/downstairs, radiators cold, underfloor heating issue, heating not coming on',
     department: 'field-service',
     priority: 'P2',
     aiMode: 'assist',
-    requiresErrorCode: true,
-    requiresPhoto: true,
-    likelyManufacturerDefect: true,
-  },
-  'BOILER-FAULT': {
-    label: 'Boiler fault code / lockout',
-    department: 'field-service',
-    priority: 'P2',
-    aiMode: 'assist',
-    requiresErrorCode: true,
-    requiresPhoto: true,
-    likelyManufacturerDefect: true,
-  },
-  'LEAK': {
-    label: 'Water leak / drip from system',
-    department: 'field-service',
-    priority: 'P2',
-    aiMode: 'assist',
+    requiresPhoto: true, // "Request Error Codes & Photos of Controller"
     requiresErrorCode: false,
-    requiresPhoto: true,
-    likelyManufacturerDefect: false,
+    requiresSerialNumber: false,
   },
-  'HEAT-INTERMIT': {
-    label: 'Intermittent heating fault',
+  'NO-HOT-WATER': {
+    label: 'No Hot Water',
+    examples: 'No hot water, water not hot enough, hot water running out quickly',
     department: 'field-service',
     priority: 'P3',
     aiMode: 'assist',
+    requiresPhoto: true,
     requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
+    requiresSerialNumber: false,
   },
-  'CONTROLS': {
-    label: 'Thermostat / app / controls issue',
+  'HEAT-PUMP-FAULT': {
+    label: 'Heat Pump Error / Fault',
+    examples: 'Error code showing, heat pump not heating, noise / leaking, outdoor unit issue',
     department: 'field-service',
-    priority: 'P3',
-    aiMode: 'assist',
-    requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: true,
+    priority: 'P2',
+    aiMode: 'human', // a senior plumber always decides — see triage.js
+    requiresPhoto: true, // "photo of display"
+    requiresErrorCode: true,
+    requiresSerialNumber: true,
   },
-  'NOISE': {
-    label: 'Unusual noise from system',
-    department: 'field-service',
-    priority: 'P4',
-    aiMode: 'assist',
-    requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
-  },
-  'MVHR-FILTER': {
-    label: 'MVHR filter / ventilation fault',
-    department: 'field-service',
+  'OTHER-QUERY': {
+    label: 'Other Query / Advice',
+    examples: 'How to use system, settings questions, general queries, high running costs',
+    department: 'guidance',
     priority: 'P4',
     aiMode: 'deterministic-candidate',
-    requiresErrorCode: false,
     requiresPhoto: false,
-    likelyManufacturerDefect: false,
-  },
-  'ANNUAL-SERVICE': {
-    label: 'Routine annual service / maintenance',
-    department: 'scheduling',
-    priority: 'P4',
-    aiMode: 'deterministic-candidate',
     requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
-    coveredByServiceContract: true,
+    requiresSerialNumber: false,
   },
-  'OTHER': {
-    label: 'Other / not sure',
-    department: 'field-service',
-    priority: 'P3',
-    aiMode: 'human',
-    requiresErrorCode: false,
-    requiresPhoto: false,
-    likelyManufacturerDefect: false,
-  },
+};
+
+// The exact checklist from the Aftercare Call Triage Guide's "Is it a plumbing
+// leak?" box. A YES on any of these means Builder/Snagging, not MOS — regardless
+// of warranty status ("Not our plumbing responsibility").
+const LEAK_SNAGGING_CHECKLIST = {
+  roofLeak: 'Roof leak',
+  showerTraySealFailure: 'Shower tray not sealed',
+  externalDrainBlocked: 'External drain / waste pipe blocked',
+  waterIngressBuildingFabric: 'Water ingress from building fabric',
+  skylightWindowLeak: 'Skylight / window leak',
 };
 
 const PRIORITIES = {
@@ -128,57 +83,40 @@ const PRIORITIES = {
   P4: { rank: 4, label: 'P4 — Routine', firstResponseMinutes: 4320, resolutionMinutes: 10080, clock: 'business' },
 };
 
-// "Parties" = who the ticket is accountable to. This is the answer to "who should be
-// on-site or who should be paying" — the exact decision that was previously made
-// inconsistently by whoever answered the phone.
+// "Parties" = who the ticket is accountable to — the pitch deck's "five different
+// people" a call can end up with. Chargeable outcomes carry a separate chargeParty
+// (builder vs. homeowner) rather than being modelled as extra parties, since MOS
+// still attends in both cases — only who gets billed differs.
 const PARTIES = {
-  'emergency-gas': {
-    label: 'Emergency protocol (gas/CO)',
-    accountableRole: 'on-call-engineer',
-    restricted: true,
-    chargeableDefault: false,
-  },
-  'mos-warranty-labour': {
-    label: 'MOS Mechanical — labour warranty (no charge)',
+  'plumbing-team': {
+    label: 'MOS Plumbing Team',
     accountableRole: 'field-service',
     restricted: false,
-    chargeableDefault: false,
   },
-  'mos-service-contract': {
-    label: 'MOS Mechanical — covered by service contract',
+  'builder-snagging': {
+    label: 'Builder / Snagging Team',
+    accountableRole: 'builder',
+    restricted: false,
+  },
+  'plumber-review-chargeable': {
+    label: 'Plumber to Review — Chargeable',
     accountableRole: 'field-service',
     restricted: false,
-    chargeableDefault: false,
   },
-  'mos-chargeable': {
-    label: 'MOS Mechanical — chargeable repair',
+  'heat-merchants-warranty': {
+    label: 'Heat Merchants — Supplier Warranty Claim',
     accountableRole: 'field-service',
     restricted: false,
-    chargeableDefault: true,
   },
-  'manufacturer-warranty': {
-    label: 'Manufacturer warranty claim',
-    accountableRole: 'field-service',
+  'customer-guidance': {
+    label: 'Customer Guidance / Advice',
+    accountableRole: 'office-admin',
     restricted: false,
-    chargeableDefault: false,
-  },
-  'third-party-installer': {
-    label: 'Referred to original (non-MOS) installer',
-    accountableRole: 'back-office',
-    restricted: false,
-    chargeableDefault: null,
   },
   'triage-review': {
-    label: 'Back-office — data verification needed',
-    accountableRole: 'back-office',
+    label: 'Office — Warranty Verification Needed',
+    accountableRole: 'office-admin',
     restricted: false,
-    chargeableDefault: null,
-  },
-  'mos-scheduling': {
-    label: 'MOS Mechanical — scheduled maintenance',
-    accountableRole: 'scheduling',
-    restricted: false,
-    chargeableDefault: false,
   },
 };
 
@@ -202,13 +140,14 @@ const THRESHOLDS = {
 };
 
 const POLICY_VERSIONS = {
-  triage: 'triage-v1',
+  triage: 'triage-v2-mos-documented-rules',
   sla: 'sla-v1',
   classifier: 'voice-intake-stub-classifier-2026-09-01',
 };
 
 const REFERENCE = {
   faultTypes: FAULT_TYPES,
+  leakSnaggingChecklist: LEAK_SNAGGING_CHECKLIST,
   priorities: PRIORITIES,
   parties: PARTIES,
   states: STATES,

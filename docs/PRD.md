@@ -2,317 +2,183 @@
 
 **Status:** Draft for stakeholder review
 **Owner:** Product (drafted with Claude, for review by MOS Mechanical operations)
-**Last updated:** 2026-09-11
-**Related:** [`aftercare-workbench/`](../aftercare-workbench) — working prototype implementing this PRD · [`Design/`](../Design) — UML + SVG diagrams of the flow (activity, sequence, class, state, and component diagrams)
+**Last updated:** 2026-09-17
+**Related:** [`aftercare-workbench/`](../aftercare-workbench) — working prototype implementing this PRD · [`Design/`](../Design) — UML + SVG diagrams of the flow
+
+**Source documents** (MOS Mechanical / MJOS Group, Innovation Exchange submission — this PRD and the prototype are built directly from these, not from an independently invented process):
+- *MOS Mechanical Aftercare Pitch* (Owen Boyle, Group Operations Manager, MJOS Group)
+- *MOS Aftercare Problem Summary*
+- *Aftercare Call Triage Guide*
+- *Aftercare Call Guide — within 1 year warranty*
+- *Aftercare Call Guide — over 1 year warranty*
+- *Heat Pump Decision Tree*
 
 ---
 
 ## 1. Problem statement
 
-MOS Mechanical's aftercare process has a data problem, not just a process problem.
-The facts needed to triage a fault call correctly — who installed the system, when it
-was commissioned, what warranty terms apply, whether a service contract is active —
-live in spreadsheets that are disconnected from the ticketing system. Whoever answers
-the phone has to either know this off the top of their head or go hunting for it while
-the customer is on the line. In practice, neither happens consistently, so:
+In Owen Boyle's own words: *"The decision in the middle is the hard part."* MOS Mechanical installs heating, plumbing and renewables into new-build housing schemes across Leinster. Around 2,500 houses are handed over and now sitting inside or just outside their warranty period, generating 35–50 aftercare calls a week from homeowners and builders. Before any call is useful as a ticket, MOS has to establish five things: **who and where** the caller is, **what the fault** actually is, **when the house was commissioned**, **whether it is still inside warranty**, and **which of five parties** should deal with it — MOS's own plumbing team, the builder, a chargeable visit, a manufacturer (Heat Merchants) warranty claim, or advice that avoids a visit altogether.
 
-- **Triage decisions are inconsistent.** The same fault, on the same kind of system,
-  gets assigned to different parties (MOS chargeable / MOS warranty / manufacturer /
-  original installer) depending on who took the call and whether they checked the
-  spreadsheet.
-- **Technical detail gets lost on the phone.** Error codes, photos, and precise
-  symptoms are hard to capture reliably in an unguided phone call, so technicians
-  are dispatched without the information they need to bring the right part or
-  correctly scope the job.
-- **Party assignment errors cost money.** A warranty job billed as chargeable damages
-  trust; a chargeable job logged as warranty is lost revenue. Both currently happen
-  because the warranty/commissioning lookup is manual and easy to skip under call
-  volume.
-- **There is no visibility into fault patterns.** Because tickets aren't linked
-  cleanly to house history, nobody notices that the same site has called in three
-  times for the same fault — which is exactly the signal that should trigger a
-  different response (root-cause visit, escalation, manufacturer defect claim)
-  instead of another routine repair visit.
+The triage rules to make that decision already exist and are correct — the *Aftercare Call Triage Guide* and *Heat Pump Decision Tree* are printed and in use in the office today. The problem is what those rules need in order to work, and MOS's own problem summary and pitch name it precisely:
+
+1. **Phone calls have to be typed up.** An email becomes a ticket on its own; a phone call only becomes one if whoever took it writes it up afterwards.
+2. **The homeowner doesn't have the answers.** Commissioning date, warranty status, service history and previous calls on the house are MOS's data, not the caller's — and MOS's own ticketing system doesn't hold it either. It sits in certificates and spreadsheets.
+3. **The detail arrives too late.** Error codes, photos and serial numbers are chased after the call, or a technician is sent out without them.
+4. **It runs on who is on the phone.** The decision trees are correct, but on a busy morning they aren't always followed.
+5. **Wasted call-outs.** A plumber turns up to a builder's roof leak, or a chargeable job gets done for nothing.
+6. **Nothing moves out of hours.** Calls after five go to voicemail until the next working day.
+7. **No visibility into the pattern.** No view of call volumes, which houses keep coming back, or which products keep failing.
+8. **Recharges get missed.** Call-outs the builder is liable for aren't consistently captured or invoiced.
 
 ## 2. Goals
 
-1. Every aftercare ticket is created with house-specific data (system, install date,
-   commissioning date, warranty terms, service contract status) attached
-   automatically — not looked up ad hoc.
-2. Triage decisions (assigned party, priority, chargeable/warranty status) are made
-   by a consistent, auditable rule set, not by whoever picks up the phone.
-3. Tickets are not created missing the technical detail (error codes, photos) needed
-   to act on them — the intake flow makes this the easy path, not an afterthought.
-4. Safety-critical reports (gas smell, carbon monoxide) are always handled by a
-   human, on an emergency track, regardless of what any automation concludes.
-5. Repeat faults at the same address become visible instead of being treated as N
-   unrelated call-outs.
-6. An AI-assisted voice/phone intake path exists that produces the same
-   structured, triaged ticket a web form would — reviewed by a human before it is
-   created, never auto-committed.
+1. Every aftercare ticket is created with house-specific data (system, commissioning date, warranty status, builder, service history) attached automatically — not looked up ad hoc from a certificate or spreadsheet.
+2. Triage decisions (assigned party, chargeable status, who gets billed) are made by MOS's own documented rules, consistently, regardless of who took the call or how busy the day was.
+3. Tickets aren't created missing the evidence (photos, error codes, serial numbers, service certificates) a fault type needs — the intake flow makes collecting it the easy path.
+4. Heat pump faults are never auto-finalised: a senior plumber always confirms whether a fault is MOS's own hydraulic-side responsibility or a Heat Merchants supplier warranty matter, per the Heat Pump Decision Tree's error-code guide.
+5. Repeat call-outs at the same house become visible ("which houses we keep going back to"), instead of being logged as N unrelated visits.
+6. An AI-assisted voice/phone intake path exists that produces the same structured, triaged record a web form would — reviewed by a person before a ticket is finalised, never auto-committed.
+7. Chargeable work is flagged at the point of triage, with **who pays** (the builder or the homeowner) captured correctly, so the recharge position at month end doesn't rely on memory.
 
 ### Non-goals (for this phase)
 
-- Replacing MOS's existing ticketing/CRM system outright — this is designed to sit in
-  front of it and hand off a complete ticket (see §9, integration).
-- Fully autonomous AI dispatch with no human in the loop. Every path in this design
-  keeps a human able to see and correct the machine's decision before it is acted on.
-- Real-time telephony/IVR integration (call routing, recording infrastructure) — the
-  voice assistant here is scoped to intake and extraction, not full call handling.
+- Replacing MOS's own ticketing and scheduling system — that already works and this sits in front of it, handing off a complete record (see §12, integration).
+- Fully autonomous AI dispatch with no human in the loop — every heat pump decision, and every chargeable decision, stays reviewable by a person before it's acted on.
+- Building the actual Heat Merchants warranty-logging integration, or the phone-system/AI-voice telephony layer itself — this prototype defines the contract those would plug into (see §9).
 
 ## 3. Users
 
 | Persona | Role | What they need from this |
 |---|---|---|
-| Office Admin (e.g. Niamh) | Answers phones / processes the web form | A single place that shows house history and produces a correctly-triaged ticket without manual spreadsheet lookups |
-| Field Technician (e.g. Colm) | Attends the job | A ticket that already tells them what's covered, what parts/photos exist, and why |
-| Operations Manager (e.g. Síle) | Owns aftercare P&L and SLAs | Consistent, auditable triage; visibility into repeat faults and chargeable revenue leakage; ability to override a rule with a recorded reason |
-| Homeowner | Reports the fault | A faster, less repetitive intake (via phone or a simple web form) and correct expectations about cost set early |
+| Office Admin | Answers phones / processes the web form | A single place that shows house history and produces a correctly-triaged ticket without a manual certificate/spreadsheet lookup |
+| Senior Plumber | Signs off heat pump routing decisions | The error code, serial number and service-certificate status in hand before deciding hydraulic-side vs. supplier warranty |
+| Field Technician | Attends the job | A ticket that already says what's covered, what evidence exists, and why |
+| Builder / Snagging contact | Handles snagging-checklist items and builder-warranty recharges | Clear separation of what's the builder's responsibility vs. MOS's, and an accurate monthly recharge position |
+| Owen Boyle (Group Operations Manager) | Owns aftercare outcomes across MJOS Group | Consistent, auditable triage; visibility into repeat faults and recharge revenue; the same process working for MSM Renewables and Home Comfort Retrofits too |
+| Homeowner | Reports the fault | A faster, guided way to report (day or night) and a correct, early expectation of whether the visit is chargeable |
 
 ## 4. Current vs. future process
 
-**Today:** Customer calls → staff member manually asks questions, writes notes →
-separately checks (or doesn't check) a spreadsheet for install/warranty info →
-manually decides who owns the fault → creates a ticket in the ticketing system with
-whatever detail was captured. Consistency and completeness depend entirely on the
-individual handling the call.
+**Today** ("What has to happen on every call", Pitch p.4): take the customer and the fault → work out what the issue is → find the commissioning date → check in/out of warranty → raise a ticket and schedule it. Every step depends on a person doing it correctly from memory, using certificates and spreadsheets MOS's own ticketing system doesn't hold.
 
-**Future (this PRD):** Customer calls, uses the web form, or a voice intake is
-transcribed → the system looks up the house record automatically → a guided
-questionnaire (fault-type-specific) collects the details a technician actually needs
-→ a deterministic rules engine decides party/priority/chargeable status from the
-house record and the fault type → a complete, explained ticket is created, flagged
-if anything required is still missing.
+**Future (this PRD):** customer uses the web form, or a voice intake is transcribed → the system finds the house record automatically → a guided, fault-specific questionnaire collects the evidence a technician or supplier claim actually needs → MOS's own documented triage rules decide the party, the charge status, and who pays → a complete ticket lands in the same queue MOS already runs, whichever channel it came from.
 
 ## 5. Solution overview
 
 Three parts, all implemented in the prototype:
 
-1. **A house/asset record** that holds what today lives in spreadsheets: system
-   type, manufacturer, install date, commissioning date, warranty terms (parts vs.
-   labour, which often differ), service contract status, and whether MOS or a third
-   party installed it.
-2. **A triage rules engine** — a pure function of (house record, fault report) →
-   (assigned party, priority, chargeable flag, explanation). Same inputs always
-   produce the same decision, and every decision names the rule that produced it, so
-   it can be audited or corrected. See §7 for the full rule table.
+1. **A house/asset record** holding what today lives in certificates and spreadsheets: builder, system type, commissioning date, and (for heat pumps) whether the current call's service certificates have been supplied.
+2. **A triage rules engine** — a pure function of (house record, fault report) → (assigned party, chargeable status, who pays, explanation), implementing MOS's own *Aftercare Call Triage Guide*, its two warranty-specific call guides, and the *Heat Pump Decision Tree* exactly. Same inputs always produce the same decision, and every decision names the rule and quotes the source guide it came from (§7).
 3. **Two intake paths that feed the same engine:**
-   - A **guided web form**: search the house → see its warranty/commissioning
-     status up front → answer a fault-type-specific questionnaire that requires the
-     evidence (error code, photo) the fault type needs.
-   - A **voice/phone intake assistant**: a transcript (from speech-to-text or a
-     typed call note) is run through an extractor that proposes a fault type, a
-     matched house, and any error code mentioned — always shown to a human for
-     confirmation before a ticket is created, never auto-submitted, and explicitly
-     blocked from auto-processing anything that looks safety-critical.
+   - A **guided web form**: search the house → see its warranty position immediately → a fault-specific questionnaire (the builder/snagging checklist for leaks; error code, serial number and service-certificate confirmation for heat pumps) collects exactly what the triage rule needs.
+   - A **voice/phone intake assistant**: a transcript is run through an extractor that proposes a fault type, a matched house, any error code, and flags likely builder/snagging language — always shown to a person for confirmation before a ticket is created.
 
-## 6. Functional requirements
+## 6. The five fault categories (as documented)
 
-### 6.1 Guided web form
-- FR-1: Search/select a house by address, customer name, or phone.
-- FR-2: On selection, display system type, installer, commissioning date, warranty
-  terms, and service-contract status without further lookup.
-- FR-3: If commissioning date is missing, warn the user before they proceed — this
-  ticket cannot get an automatic warranty decision.
-- FR-4: Fault-type selection drives which fields are required (e.g. a heat pump
-  fault code requires an error code and a photo; a noise complaint requires
-  neither).
-- FR-5: Two safety-screening checkboxes ("customer reports a gas smell", "CO alarm
-  activated") are always present and, if checked, override every other rule.
-- FR-6: Submitting runs the ticket through the triage engine server-side and shows
-  the resulting party/priority/chargeable decision and its explanation immediately.
+Taken directly from the *Aftercare Call Triage Guide*'s "What is the main issue?" step — MOS's own categories, not an invented taxonomy:
 
-### 6.2 Triage rules engine
-- FR-7: Triage is a deterministic function of the house record and the fault report;
-  given the same inputs it always returns the same decision.
-- FR-8: Every decision records which named rule produced it and a human-readable
-  explanation (see §7).
-- FR-9: Safety-critical fault types (gas, CO) always resolve to the emergency path,
-  P1, and a mandatory human callback — no rule below them can be reached.
-- FR-10: A missing commissioning date routes to manual back-office verification
-  rather than guessing a warranty outcome.
-- FR-11: A house with 2+ prior tickets for the same fault in the last 90 days is
-  flagged as a repeat fault and its priority is raised one level.
-- FR-12: A fault type that requires an error code or photo, if submitted without
-  one, marks the ticket "incomplete" rather than silently accepting it.
-- FR-13: A human with the right permission can override the assigned party, but only
-  by supplying a reason, which is recorded on the ticket alongside the original
-  rule's decision.
+| Category | Examples (from the guide) | Evidence requested |
+|---|---|---|
+| Leak / Water Ingress | Radiator leak, pipe leak, cylinder leak, overflow, damp/water stains | Photos / videos |
+| No Heating | No heating upstairs/downstairs, radiators cold, underfloor heating issue | Error codes & photos of controller |
+| No Hot Water | No hot water, water not hot enough, running out quickly | Error codes & photos of controller |
+| Heat Pump Error / Fault | Error code showing, heat pump not heating, noise/leaking, outdoor unit issue | Error code, serial number & photo of display |
+| Other Query / Advice | How to use system, settings questions, general queries | None — resolved with guidance |
 
-### 6.3 Voice/phone intake assistant
-- FR-14: Given a transcript, the system proposes: a matched house (with confidence),
-  a fault type (with confidence and the phrases that triggered it), and any error
-  code mentioned.
-- FR-15: If the safety-screening phrases (gas smell, CO alarm) are detected in the
-  transcript, the draft is blocked from proceeding to ticket creation and instead
-  instructs the handler to treat it as an emergency call.
-- FR-16: Below a confidence threshold, or when no house can be confidently matched,
-  the draft is flagged as requiring human review rather than being offered for
-  one-click ticket creation.
-- FR-17: Creating a ticket from a voice draft always passes through the same guided
-  form (pre-filled) as a manually logged call — there is no separate, unreviewed
-  ticket-creation path for voice.
+## 7. Triage rules (as implemented, cited to source)
 
-### 6.4 Visibility
-- FR-18: An operations view shows open tickets by assigned party, count of P1s,
-  count of chargeable vs. warranty tickets, and count of repeat-fault flags.
+Rules are evaluated in order; the first match decides the outcome.
 
-## 7. Triage rules (as implemented)
-
-Rules are evaluated in order; the first match decides the party/priority/chargeable
-outcome. Repeat-fault detection and evidence-completeness checks apply afterwards,
-independent of which rule matched.
-
-| Rule | Condition | Party | Priority | Chargeable | AI mode |
+| Rule | Condition | Party | Chargeable | Billed to | Source |
 |---|---|---|---|---|---|
-| `RULE_01_SUSPECTED_GAS_LEAK` | Fault type is gas smell, or the gas-smell flag is set | Emergency protocol | P1 | No | **Prohibited** — human callback mandatory |
-| `RULE_02_CO_ALARM` | Fault type is CO alarm, or the CO flag is set | Emergency protocol | P1 | No | **Prohibited** — human callback mandatory |
-| `RULE_08_MISSING_COMMISSIONING_DATA` | House record has no commissioning date | Back-office review | Escalated one level | Unknown (TBD) | Human |
-| `RULE_04_POST_INSTALL_SNAG_WINDOW` | MOS installed, ≤30 days since commissioning | MOS — labour warranty | P2 | No | Assist |
-| `RULE_07_THIRD_PARTY_INSTALL` | Installed by someone other than MOS | Referred to original installer | Fault type's default | Unknown (offer chargeable MOS visit) | Human |
-| `RULE_06_ACTIVE_SERVICE_CONTRACT` | Active service contract covers this fault type | MOS — under contract | Fault type's default | No | Assist |
-| `RULE_03_IN_PARTS_WARRANTY_MANUFACTURER_DEFECT` | Fault type is a likely component defect and parts warranty is active | Manufacturer warranty claim | Fault type's default | No | Assist |
-| `RULE_05_IN_LABOUR_WARRANTY` | Labour warranty is still active | MOS — labour warranty | Fault type's default | No | Assist |
-| `RULE_09_OUT_OF_WARRANTY_CHARGEABLE` | None of the above apply | MOS — chargeable | Fault type's default | **Yes** | Assist |
+| `RULE_GUIDANCE_ONLY` | Fault type is Other Query / Advice | Customer Guidance | No | — | Triage Guide: "Provide Guidance/Advice... Resolve if possible" |
+| `RULE_MISSING_COMMISSIONING_DATE` | No commissioning date on file | Office — Warranty Verification Needed | Unknown | — | Triage Guide, Important Reminders: "Always check warranty date before sending anyone" |
+| `RULE_BUILDER_SNAGGING` | Leak matches the snagging checklist (roof leak, shower tray seal, external drain, building-fabric ingress, skylight/window leak) | Builder / Snagging Team | — | Builder | Triage Guide: "Not our plumbing responsibility" — applies **regardless of warranty status** |
+| `RULE_HEATPUMP_SERVICE_CERTS_REQUIRED` | Heat pump, error code starts with F (refrigerant), no service certs supplied yet | Heat Merchants (pending) | Unknown | — | Heat Pump Decision Tree error-code guide: "F- or F Gas = Warranty Call Required"; Pitch: cover "only stands up if the annual service has been done and certified" |
+| `RULE_HEATPUMP_SUPPLIER_WARRANTY` | Heat pump, F-code, service certs supplied | Heat Merchants — Supplier Warranty Claim | No | — | Heat Pump Decision Tree |
+| `RULE_WITHIN_MOS_WARRANTY` | Within MOS's 1-year plumbing warranty (or heat pump H-code / unclear code within that period) | MOS Plumbing Team | No | — | Call Guide — within 1 year: "All calls within 1 year of commissioning go to our Plumbing Team first" |
+| `RULE_BUILDER_WARRANTY_RECHARGE` | Past MOS's 1-year warranty, but within the builder's own (often longer) warranty | MOS Plumbing Team | Yes | **Builder** | Call Guide — within 1 year, Important reminder: "Builders Warranties are longer than our 1 year Plumbing Warranty — call outs during this period are chargeable to the Builder" |
+| `RULE_OUT_OF_WARRANTY_CHARGEABLE` | Past both MOS's and the builder's warranty | Plumber to Review — Chargeable | Yes | **Homeowner** | Call Guide — over 1 year: "Plumber attendance after 1 year is chargeable unless covered by a Heat Pump warranty" |
 
-**"AI mode" column** mirrors a pattern worth calling out explicitly: not every
-triage decision is equally safe to let AI (voice assistant or otherwise) act on
-without a human. `Prohibited` categories can never be auto-resolved. `Human`
-categories always need a person to decide. `Assist` categories can have an AI-drafted
-outcome, but a person confirms before it's final. There is no `deterministic`
-category in triage itself (there is one in fault-type classification, e.g. routine
-filter reminders) — warranty/chargeable calls always keep a human in the loop in this
-phase, both because the model is new and because of the financial and safety stakes.
+**Every heat pump ticket** is also flagged `requiresSeniorPlumberSignOff = true`, regardless of which rule fired — the Heat Pump Decision Tree never lets warranty status alone decide; a senior plumber always confirms hydraulic-side vs. supplier-warranty before dispatch.
 
-Fault types also carry required evidence (see `server/reference.js`): heat pump and
-boiler fault codes require an error code and a photo; leaks require a photo; safety
-categories require neither (don't make an emergency caller stop to take a photo).
+**Repeat-fault visibility** (not warranty-gated): a second or later ticket against the same house is flagged, addressing Problem #7 directly — "we cannot see... which houses we keep returning to."
+
+**Evidence gating**: a ticket that's missing a fault type's required evidence (photo, error code, serial number, or — for a Heat Merchants claim — service certificates) is marked `dataQuality: incomplete` rather than silently accepted, addressing Problem #3.
 
 ## 8. Data model
 
-**Site/house record** (today: scattered across spreadsheets):
-`siteId, customerName, phone, email, address, eircode, systemType, manufacturer,
-modelNumber, serialNumber, installedBy, installDate, commissioningDate,
-warrantyPartsMonths, warrantyLabourMonths, serviceContract{active, plan, expiresAt},
-seaiGrantScheme, lastServiceDate, vulnerableOccupant, notes`
+**Site/house record**: `siteId, customerName, phone, email, address, eircode, builderName, builderWarrantyMonths, systemType, manufacturer, modelNumber, serialNumber, commissioningDate, mosWarrantyMonths`.
 
-**Ticket record** (created by intake, decided by triage):
-`ticketId, siteId, channel, reportedBy, faultTypeId, errorCode, photos[], symptoms,
-gasSmell, coAlarm, openedAt, state, priority, assignedParty, chargeable,
-chargeReason, ruleId, explanation, requiresHumanCallback, dataQuality,
-missingFields[], repeatFault, repeatFaultCount`
+Two fields are the direct fix for the stated problem: `builderName` + `builderWarrantyMonths` capture the fact that *"at times, Builders Warranties are longer than our 1 year Plumbing Warranty"* — without it, a chargeable job would be billed to the wrong party by default. `commissioningDate` (not install date) is what every warranty clock in this PRD runs from; a house with no commissioning date on file is exactly the data gap `RULE_MISSING_COMMISSIONING_DATE` exists to catch rather than paper over.
 
-Full field definitions: [`server/data.js`](../aftercare-workbench/server/data.js) and
-[`server/store.js`](../aftercare-workbench/server/store.js).
+**Ticket record**: `ticketId, siteId, channel, reportedBy, builderIfKnown, faultTypeId, errorCode, serialNumber, photos[], symptoms, leakChecklist{}, serviceCertsProvided, openedAt, state, priority, assignedParty, chargeable, chargeParty, ruleId, explanation, requiresSeniorPlumberSignOff, dataQuality, missingFields[], repeatFault, repeatFaultCount`.
 
-Two fields deserve a callout because they are the direct fix for stated pain points:
-`warrantyLabourMonths` is tracked **separately** from `warrantyPartsMonths` because
-manufacturers commonly warranty parts for longer than the installer warranties
-labour — collapsing these into one "warranty" field is a common source of incorrect
-chargeable decisions. And `commissioningDate` (not install date) is what warranty
-clocks run from; a house with an install date but no commissioning date is a data
-gap, not a customer able to be triaged normally (`RULE_08`).
+Full field definitions: [`server/data.js`](../aftercare-workbench/server/data.js), [`server/triage.js`](../aftercare-workbench/server/triage.js).
 
 ## 9. AI voice assistant — how it works, and how it doesn't
 
-The prototype's voice intake (`server/classifier.js`) is a deliberately simple,
-regex/keyword-based extractor, versioned as
-`voice-intake-stub-classifier-2026-09-01`. It is not connected to a real speech
-model or LLM. It exists to:
+The prototype's voice intake (`server/classifier.js`) is a deliberately simple, regex/keyword-based extractor, versioned as `voice-intake-stub-classifier-2026-09-01` — not a call to a real speech or language model. It exists to prove out the **interface** a real ASR/LLM pipeline (the "AI voice [that] picks up for the people who will ring no matter what, and holds a normal conversation instead of a menu" — Pitch p.6) would need to satisfy: `transcript → { faultType, errorCode + its Heat-Pump-Decision-Tree meaning, matched site, leak-checklist keyword hits, requiresHumanReview }`. Because the triage engine and the UI only depend on that schema, a real model should drop in behind the same route without changing anything downstream.
 
-1. Prove out the **interface** a real implementation would need to satisfy:
-   `transcript → { faultType: {value, score, evidence}, errorCode, site: {siteId,
-   score, evidence}, safetyFlags, requiresHumanReview }`.
-2. Demonstrate the **safety gating** that has to exist regardless of how good the
-   underlying model is: a detected safety flag always blocks automated processing,
-   and low confidence always forces human review — these are policy decisions, not
-   model behaviour, and should not disappear when the model improves.
-3. Let the guided-form and triage-engine work be evaluated independently of
-   committing to a specific ASR/LLM vendor.
-
-**Production path:** replace `classifyIntake()` with a call to a real speech-to-text
-service (for live calls) and an LLM prompt constrained to the same output schema,
-behind the same function signature. Because the rest of the system (triage engine,
-UI, ticket schema) only depends on that schema, this swap should not require changing
-anything else. Recommended guardrails to carry forward unchanged:
-- A **kill switch** to disable AI-drafted extraction instantly and fall back to fully
-  manual intake, without a deploy.
-- **No autonomous ticket creation** — every AI-drafted ticket is confirmed through
-  the same guided form a human-logged call goes through.
-- **Confidence thresholds and safety-flag detection stay server-side policy**, not
-  something the model itself is trusted to enforce.
+Guardrails worth carrying into a production build unchanged:
+- **No autonomous ticket creation.** Every voice-drafted ticket is confirmed through the same guided form a human-logged call goes through — "Form or phone, it produces the same record."
+- **Heat pump routing is never fully automatic**, no matter how good the model gets — a senior plumber signs off per the Heat Pump Decision Tree, always.
+- **A kill switch to disable AI-drafted extraction instantly**, falling back to fully manual intake without a deploy.
 
 ## 10. Why this stack
 
-The prototype (`aftercare-workbench/`) is plain Node on the server and dependency-free
-vanilla JavaScript on the client — no framework, no build step, no npm install
-required to run it. This is a deliberate fit for MOS Mechanical's situation, not a
-default: MOS has no in-house software team, and a system like this will likely be
-run and lightly maintained by a generalist IT contact or a managed service provider.
-`git clone` + `node server/index.js` being the entire deployment, and every file
-being plainly readable without React/JSX/bundler knowledge, is worth more here than
-the productivity a framework would offer a dedicated engineering team. If MOS later
-staffs an in-house dev team or the UI's complexity grows substantially, revisit this
-trade-off — it is not a claim that this stack is right forever, only that it is right
-for this phase.
+The prototype is plain Node on the server and dependency-free vanilla JavaScript on the client — no framework, no build step. MOS has no in-house software team, and a system like this will likely be run and lightly maintained by a generalist IT contact or a managed service provider; `git clone` + `node server/index.js` being the entire deployment, with every file plainly readable, is worth more here than the productivity a framework buys a dedicated engineering team. Revisit this if MOS staffs an in-house dev team or the UI's scope grows substantially.
 
-The same reasoning drives two other choices worth naming: ticket data persists to a
-plain JSON file rather than a database (inspectable, no ops burden, fine at MOS's
-call volume — revisit if volume or concurrent-write needs grow), and the UI renders
-all customer-supplied text as DOM text nodes rather than HTML, which closes off
-stored-XSS from a crafted fault description or transcript without needing a
-sanitization library.
+The same reasoning drives two more choices: ticket data persists to a plain JSON file rather than a database (fine at MOS's call volume; revisit if it grows), and the UI renders all customer-supplied text as DOM text nodes rather than HTML, closing off stored XSS from a crafted fault description or transcript without a sanitization library.
 
 ## 11. Success metrics
 
+Directly from the pitch's own "What good would look like" / "Expected outcomes":
+
 | Metric | Why it matters |
 |---|---|
-| % of tickets created with a named triage rule (vs. "missing data" routes) | Directly measures whether the warranty/commissioning data gap is closing |
-| % of tickets marked `dataQuality: incomplete` at creation | Measures whether guided intake is actually collecting error codes/photos |
-| Chargeable-ticket dispute/reversal rate | Proxy for triage correctness — a wrong chargeable call usually surfaces as a customer dispute |
-| Wasted site visits (technician attends, cannot act — wrong party, missing part) | The core cost this project targets |
-| Repeat-fault tickets caught by `RULE_10` before a 3rd visit | Measures the new fault-pattern visibility this system adds |
-| Time from call start to ticket created | Should drop for web-form/voice intake vs. manual logging |
-| % of voice-intake drafts confirmed without edits | Health signal for the extractor once a real model replaces the stub — not a target to optimize prematurely |
+| % of aftercare calls captured through the form vs. by phone vs. missed out-of-hours | "Every call captured... any hour of the day" |
+| % of tickets whose party/charge decision matches the documented rule (vs. a manual override) | "The same answer every time... does not change with who took the call" |
+| Wasted call-outs (technician attends, wrong party or missing evidence) | The pitch's own headline cost: "our plumber turns up to a builder's roof leak" |
+| Recharge revenue captured — chargeable-to-builder vs. chargeable-to-homeowner, reported monthly | "Chargeable work recovered... invoiced at month end" — this PRD's Overview screen models exactly this split |
+| Houses/products triggering 2+ calls, tracked over time | "Something to learn from... fed back into how we build" |
+| Time senior plumbers and office staff spend on phone triage | "Time back for the people we need on site" |
 
-## 12. Phased rollout
+## 12. Integration required for a production build
 
-- **Phase 0 (this deliverable):** Working prototype — guided form, triage engine,
-  voice-intake demo, seed data standing in for the real house register.
-- **Phase 1:** Migrate the real house/warranty spreadsheet into the site record
-  schema; pilot the guided web form with office admins on live calls, engine
-  decisions reviewed but not yet fully trusted.
-- **Phase 2:** Wire ticket creation into MOS's actual ticketing system (webhook or
-  API push once a complete ticket is produced) instead of the prototype's standalone
-  store; retire duplicate manual entry.
-- **Phase 3:** Replace the stub classifier with a real speech-to-text + LLM
-  extraction pipeline behind the same interface; pilot on a subset of inbound calls
-  with the kill switch on hand.
-- **Phase 4:** Expand fault-type and rule coverage based on Phase 1–2 data (e.g.
-  manufacturer-specific warranty nuances, additional SEAI/grant-scheme conditions).
+Named directly in the pitch (p.7) — this prototype stands in front of all of these but integrates with none of them yet:
 
-## 13. Risks
+- MOS's own ticketing and scheduling system (built in-house) — this prototype would hand off a complete record to it rather than replacing it
+- The MOS website, where the aftercare form should live
+- Commissioning and certification records — today certificates and spreadsheets; this PRD's site record is what they'd migrate into
+- The existing Aftercare Tracker
+- MOS's office phone system (for the AI voice path)
+- Microsoft 365 / SharePoint, where project and property files live
+- The Heat Merchants supplier warranty logging process
+
+## 13. Phased rollout
+
+- **Phase 0 (this deliverable):** working prototype — guided form, triage engine matching MOS's own documented rules, voice-intake demo, seed data standing in for the real house/warranty records.
+- **Phase 1:** migrate the real commissioning/warranty/builder data into the site record schema; pilot the guided web form with office admins on live calls.
+- **Phase 2:** integrate ticket creation with MOS's actual ticketing/scheduling system and the Aftercare Tracker, retiring duplicate manual entry.
+- **Phase 3:** replace the stub classifier with a real speech-to-text + LLM extraction pipeline behind the same interface; connect to the office phone system.
+- **Phase 4:** extend to MSM Renewables and Home Comfort Retrofits, per the pitch's own closing point that "the same process would run" for both.
+
+## 14. Risks
 
 | Risk | Mitigation |
 |---|---|
-| Real warranty terms are more varied than the prototype's per-fault-type model (manufacturer-specific exceptions, grant-scheme conditions) | Treat §7's rule table as a first draft; validate against actual manufacturer warranty documents before Phase 1 go-live |
-| Office admins distrust or route around the tool under call pressure | Keep the override path fast (§6.2 FR-13) so correcting a wrong decision is easier than working around the tool entirely |
-| Voice extraction (once real) misclassifies safety-critical language | Safety-flag detection is intentionally broad/keyword-based rather than confidence-scored, and sits outside the model's own judgment — see §9 |
-| House register migration from spreadsheets introduces the same gaps it's meant to fix (e.g. missing commissioning dates) | `RULE_08` makes a missing date visible and unactionable-by-default rather than silently defaulting to a guess, which also surfaces migration data quality issues immediately |
-| Call/voice recordings and transcripts contain personal data | Data retention and consent for recording are legal/compliance questions this PRD flags but does not resolve — see open questions |
+| Builder warranty terms vary by scheme and aren't yet in any system MOS holds | `builderWarrantyMonths` is a per-site field precisely so this can be populated scheme-by-scheme during Phase 1 migration, rather than assumed |
+| Heat Merchants' actual warranty-logging requirements may go beyond "service certificates supplied" | `RULE_HEATPUMP_SERVICE_CERTS_REQUIRED` models the one gate MOS's own documents name; validate against Heat Merchants' real process before Phase 2 |
+| Error-code prefix rules (H-/F-) are documented for Panasonic only | Confirm whether other installed brands (Vaillant, Worcester Bosch, Mitsubishi Ecodan) use comparable prefixes, or need their own guide, before relying on this for non-Panasonic heat pumps |
+| Voice extraction (once real) misclassifies a builder/snagging item as MOS's responsibility | Snagging-keyword detection is intentionally broad and surfaced as a flag for human confirmation, not an automatic routing decision |
+| Office admins route around the tool under call pressure | Keep the override path fast (an MOS Plumbing Team member can reassign with a recorded reason) so correcting a wrong decision is easier than working around the tool |
 
-## 14. Open questions for MOS stakeholders
+## 15. Open questions for MOS stakeholders
 
-1. What ticketing system is in use today, and does it have an API/webhook for
-   Phase 2 integration, or would this need to be a manual export/import initially?
-2. Do warranty terms vary meaningfully by manufacturer beyond parts/labour month
-   counts (e.g. different conditions for heat pumps under SEAI grant schemes)?
-3. Who is the actual emergency/on-call contact for `RULE_01`/`RULE_02`, and is there
-   an existing gas-emergency protocol this should defer to rather than duplicate?
-4. Is there an existing service-contract product catalog, or does "Annual Care Plan"
-   in the prototype need to be replaced with real plan names/terms?
-5. What is the data source and format for the real house/warranty register, and who
-   owns keeping commissioning dates logged going forward (so `RULE_08` becomes rare
-   rather than common)?
-6. For voice intake: is call recording/transcription already legally covered under
-   existing customer consent, or does this require its own consent flow?
+1. Does MOS's own ticketing/scheduling system expose an API or webhook for Phase 2, or would this need a manual export/import initially?
+2. What is the actual process for logging a warranty call with Heat Merchants — a portal, a phone line, an email template — and what beyond service certificates do they require?
+3. Do all builder warranties get captured anywhere today (contracts, defects-liability schedules), or would `builderWarrantyMonths` need to be populated scheme-by-scheme from scratch?
+4. Is the H-/F- error-code convention specific to Panasonic, or do Vaillant, Worcester Bosch and Mitsubishi Ecodan (all named in the pitch/seed data) have their own equivalent codes MOS already relies on?
+5. Who is "Richie" (named in the Heat Pump Decision Tree as the scheduling contact) meant to be in a production system — a fixed person, a role, or a rotation? Should the workbench name a scheduling contact per fault type generally?
+6. Is call recording/transcription for the AI voice path already covered under existing customer consent, or does it need its own consent flow?

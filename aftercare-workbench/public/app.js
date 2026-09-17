@@ -144,7 +144,9 @@ function partyLabel(partyId) {
 }
 
 function chargeBadge(ticket) {
-  if (ticket.chargeable === true) return el('span', { class: 'badge badge-charge', text: 'Chargeable' });
+  if (ticket.chargeable === true) {
+    return el('span', { class: 'badge badge-charge', text: `Chargeable (${ticket.chargeParty === 'builder' ? 'builder' : 'homeowner'})` });
+  }
   if (ticket.chargeable === false) return el('span', { class: 'badge badge-nocharge', text: 'No charge' });
   return el('span', { class: 'badge badge-unknown', text: 'Charge: TBD' });
 }
@@ -176,7 +178,7 @@ function renderQueueView() {
                 const candidate =
                   state.tickets.find((t) => t.dataQuality === 'incomplete') ||
                   state.tickets.find((t) => t.repeatFault) ||
-                  state.tickets.find((t) => t.requiresHumanCallback) ||
+                  state.tickets.find((t) => t.requiresSeniorPlumberSignOff) ||
                   state.tickets[0];
                 if (candidate) state.selectedTicketId = candidate.ticketId;
               }
@@ -285,7 +287,7 @@ function renderTicketDetail(ticket) {
   }
 
   // Explanation callout — the audit trail for the triage decision.
-  const calloutClass = ticket.aiMode === 'prohibited' ? 'callout-danger' : ticket.dataQuality === 'incomplete' ? 'callout-warn' : 'callout-info';
+  const calloutClass = ticket.dataQuality === 'incomplete' ? 'callout-warn' : 'callout-info';
   body.appendChild(
     el('div', { class: `callout ${calloutClass}` }, [
       el('strong', { text: `${partyLabel(ticket.assignedParty)} — rule ${ticket.ruleId}` }),
@@ -293,11 +295,11 @@ function renderTicketDetail(ticket) {
     ])
   );
 
-  if (ticket.requiresHumanCallback) {
+  if (ticket.requiresSeniorPlumberSignOff) {
     body.appendChild(
-      el('div', { class: 'callout callout-danger' }, [
-        el('strong', { text: 'Human callback required' }),
-        el('span', { text: 'This category can never be closed by automation. A person must phone the customer back.' }),
+      el('div', { class: 'callout callout-warn' }, [
+        el('strong', { text: 'Senior plumber sign-off required' }),
+        el('span', { text: 'Heat pump faults are never auto-finalised — a senior plumber must confirm whether this is MOS\'s own hydraulic-side fault or a Heat Merchants supplier warranty matter before it is dispatched (Heat Pump Decision Tree).' }),
       ])
     );
   }
@@ -312,29 +314,33 @@ function renderTicketDetail(ticket) {
   }
 
   body.appendChild(el('div', { class: 'section-title', text: 'Site & warranty' }));
+  const mosWarrantyEnd = site && site.commissioningDate ? addMonthsIso(site.commissioningDate, site.mosWarrantyMonths ?? 12) : null;
+  const builderWarrantyEnd = site && site.commissioningDate && site.builderWarrantyMonths ? addMonthsIso(site.commissioningDate, site.builderWarrantyMonths) : null;
   body.appendChild(
     el('dl', { class: 'kv' }, [
       el('dt', { text: 'Customer' }), el('dd', { text: site ? `${site.customerName} · ${site.phone}` : '—' }),
       el('dt', { text: 'Address' }), el('dd', { text: site ? site.address : '—' }),
+      el('dt', { text: 'Builder' }), el('dd', { text: site ? site.builderName : '—' }),
       el('dt', { text: 'System' }), el('dd', { text: site ? `${site.systemType} — ${site.manufacturer} ${site.modelNumber}` : '—' }),
-      el('dt', { text: 'Installed by' }), el('dd', { text: site ? site.installedBy : '—' }),
       el('dt', { text: 'Commissioned' }), el('dd', { text: site ? (site.commissioningDate || 'MISSING — see rule above') : '—' }),
-      el('dt', { text: 'Warranty (parts/labour)' }), el('dd', { text: site ? `${site.warrantyPartsMonths}mo / ${site.warrantyLabourMonths}mo` : '—' }),
-      el('dt', { text: 'Service contract' }), el('dd', { text: site && site.serviceContract.active ? `Active — ${site.serviceContract.plan}` : 'None' }),
+      el('dt', { text: 'MOS plumbing warranty' }), el('dd', { text: mosWarrantyEnd ? `expires ${mosWarrantyEnd}` : '—' }),
+      el('dt', { text: 'Builder warranty' }), el('dd', { text: builderWarrantyEnd ? `expires ${builderWarrantyEnd}` : 'none beyond MOS\'s' }),
     ])
   );
 
   body.appendChild(el('div', { class: 'section-title', text: 'Reported fault' }));
-  body.appendChild(
-    el('dl', { class: 'kv' }, [
-      el('dt', { text: 'Channel' }), el('dd', { text: ticket.channel }),
-      el('dt', { text: 'Reported' }), el('dd', { text: fmtDate(ticket.openedAt) }),
-      el('dt', { text: 'Error code' }), el('dd', { text: ticket.errorCode || '—' }),
-      el('dt', { text: 'Photos attached' }), el('dd', { text: String(ticket.photos.length) }),
-      el('dt', { text: 'Symptoms' }), el('dd', { text: ticket.symptoms || '—' }),
-      el('dt', { text: 'Charge' }), el('dd', {}, chargeBadge(ticket)),
-    ])
-  );
+  const faultDl = [
+    el('dt', { text: 'Channel' }), el('dd', { text: ticket.channel }),
+    el('dt', { text: 'Builder (if known)' }), el('dd', { text: ticket.builderIfKnown || '—' }),
+    el('dt', { text: 'Reported' }), el('dd', { text: fmtDate(ticket.openedAt) }),
+    el('dt', { text: 'Error code' }), el('dd', { text: ticket.errorCode || '—' }),
+    el('dt', { text: 'Serial number' }), el('dd', { text: ticket.serialNumber || '—' }),
+    el('dt', { text: 'Photos attached' }), el('dd', { text: String((ticket.photos || []).length) }),
+    el('dt', { text: 'Service certs provided' }), el('dd', { text: ticket.serviceCertsProvided ? 'Yes' : 'No' }),
+    el('dt', { text: 'Symptoms' }), el('dd', { text: ticket.symptoms || '—' }),
+    el('dt', { text: 'Charge' }), el('dd', {}, chargeBadge(ticket)),
+  ];
+  body.appendChild(el('dl', { class: 'kv' }, faultDl));
 
   body.appendChild(el('div', { class: 'section-title', text: 'Update ticket' }));
   const stateSelect = el(
@@ -370,6 +376,12 @@ function renderTicketDetail(ticket) {
   return panel;
 }
 
+function addMonthsIso(dateStr, months) {
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString().slice(0, 10);
+}
+
 async function refreshTickets() {
   const resp = await api('/api/tickets');
   state.tickets = resp.tickets;
@@ -378,31 +390,44 @@ async function refreshTickets() {
 
 // -------------------------------------------------------------------------- guided intake view
 
+// Each demo maps to one documented rule path — see server/triage.js and
+// docs/PRD.md §7 for the rule-by-rule citations back to MOS's own guides.
 const INTAKE_DEMOS = [
   {
-    id: 'data-gap',
-    label: '▶ Demo: data-gap safeguard',
-    customerName: 'Grainne Lynch',
-    faultTypeId: 'MVHR-FILTER',
-    symptoms: 'Ventilation unit making noise, unsure if still under warranty.',
-    say: "Grainne Lynch's house has no commissioning date on file — a real gap the spreadsheet process leaves open today. Watch: instead of guessing a warranty outcome, the ticket is routed to back-office for manual verification.",
+    id: 'builder-snagging',
+    label: '▶ Demo: builder / snagging',
+    customerName: 'Fiona Doyle',
+    faultTypeId: 'LEAK-INGRESS',
+    leakChecklist: { showerTraySealFailure: true },
+    symptoms: 'Water pooling near the shower tray, seal looks like it has failed.',
+    say: "Fiona Doyle's house is still inside MOS's warranty — but a shower tray seal failure is on the builder/snagging checklist. Watch: it goes to the Builder/Snagging Team regardless of warranty status, exactly as the Aftercare Call Triage Guide says: \"not our plumbing responsibility.\"",
   },
   {
-    id: 'mfr-warranty',
-    label: '▶ Demo: manufacturer warranty',
+    id: 'within-warranty',
+    label: '▶ Demo: within MOS warranty',
     customerName: 'Aidan Byrne',
-    faultTypeId: 'HP-FAULT',
-    errorCode: 'E4',
-    symptoms: 'Outdoor unit flashing red light, no heat.',
-    say: "Aidan Byrne's heat pump has an error code and is still inside its parts warranty window. Watch: it's automatically assigned as a manufacturer warranty claim — not billed to MOS or the customer.",
+    faultTypeId: 'HEAT-PUMP-FAULT',
+    errorCode: 'H12',
+    serialNumber: 'PA-88213',
+    symptoms: 'Heat pump not heating, controller showing H12.',
+    say: "Aidan Byrne's heat pump is inside MOS's 1-year warranty, and the error code starts with H — hydraulic, per the Heat Pump Decision Tree's error code guide. Watch: it goes to MOS's own Plumbing Team, free of charge, pending a senior plumber's sign-off.",
   },
   {
-    id: 'chargeable',
-    label: '▶ Demo: chargeable repair',
+    id: 'builder-recharge',
+    label: '▶ Demo: builder recharge',
     customerName: 'Sean & Orla Whelan',
-    faultTypeId: 'HEAT-INTERMIT',
-    symptoms: 'Heating cuts out intermittently, especially in the evening.',
-    say: "The Whelans' heat pump is out of warranty with no service contract — a common source of billing disputes today. Watch: it's correctly flagged chargeable up front, before anyone drives out to the job.",
+    faultTypeId: 'NO-HEATING',
+    symptoms: 'No heating upstairs, radiators cold since last night.',
+    say: "The Whelans are past MOS's 1-year plumbing warranty, but their builder, Kildare Meadows, gives a 2-year warranty. Watch: MOS still attends, but the call-out is chargeable to the builder, not the homeowner — \"Builders Warranties are longer than our 1 year Plumbing Warranty\" (Aftercare Call Guide, over 1 year).",
+  },
+  {
+    id: 'chargeable-homeowner',
+    label: '▶ Demo: chargeable to homeowner',
+    customerName: 'Cian Murphy',
+    faultTypeId: 'LEAK-INGRESS',
+    leakChecklist: {},
+    symptoms: 'Pipe leak under the kitchen sink, dripping steadily.',
+    say: "Cian Murphy is past both MOS's and the builder's warranty windows, and this is a genuine internal plumbing leak — not a snagging item. Watch: it's flagged chargeable to the homeowner, and they're told the cost before anyone travels.",
   },
 ];
 
@@ -411,15 +436,18 @@ async function runIntakeDemo(cfg) {
   if (!site) return;
   state.intake.site = site;
   state.intake.siteQuery = cfg.customerName;
+  state.intake.lastFaultTypeId = cfg.faultTypeId;
   const payload = {
     siteId: site.siteId,
     channel: 'web-form',
     faultTypeId: cfg.faultTypeId,
     errorCode: cfg.errorCode || '',
-    photos: [],
+    serialNumber: cfg.serialNumber || '',
+    photos: ['demo-photo.jpg'],
     symptoms: cfg.symptoms || '',
-    gasSmell: false,
-    coAlarm: false,
+    leakChecklist: cfg.leakChecklist || {},
+    serviceCertsProvided: !!cfg.serviceCertsProvided,
+    builderIfKnown: site.builderName,
   };
   const { ticket } = await api('/api/tickets', { method: 'POST', body: JSON.stringify(payload) });
   state.intake.lastResult = ticket;
@@ -488,7 +516,7 @@ function renderIntakeResults(container) {
   const matches = state.sites.filter(
     (s) => !q || s.address.toLowerCase().includes(q) || s.customerName.toLowerCase().includes(q) || s.phone.includes(q)
   );
-  for (const site of matches.slice(0, 8)) {
+  for (const site of matches.slice(0, 9)) {
     const card = el(
       'div',
       { class: `site-card${state.intake.site && state.intake.site.siteId === site.siteId ? ' selected' : ''}`, onclick: () => { state.intake.site = site; render(); } },
@@ -514,56 +542,109 @@ function renderIntakeForm() {
     return panel;
   }
 
+  const mosWarrantyEnd = site.commissioningDate ? addMonthsIso(site.commissioningDate, site.mosWarrantyMonths ?? 12) : null;
+  const builderWarrantyEnd = site.commissioningDate && site.builderWarrantyMonths ? addMonthsIso(site.commissioningDate, site.builderWarrantyMonths) : null;
   body.appendChild(
     el('dl', { class: 'kv' }, [
       el('dt', { text: 'System' }), el('dd', { text: `${site.systemType} — ${site.manufacturer} ${site.modelNumber}` }),
-      el('dt', { text: 'Installed by' }), el('dd', { text: site.installedBy }),
+      el('dt', { text: 'Builder' }), el('dd', { text: site.builderName }),
       el('dt', { text: 'Commissioned' }), el('dd', { text: site.commissioningDate || 'MISSING' }),
-      el('dt', { text: 'Warranty (parts/labour)' }), el('dd', { text: `${site.warrantyPartsMonths}mo / ${site.warrantyLabourMonths}mo` }),
-      el('dt', { text: 'Service contract' }), el('dd', { text: site.serviceContract.active ? `Active — ${site.serviceContract.plan}` : 'None' }),
+      el('dt', { text: 'MOS plumbing warranty' }), el('dd', { text: mosWarrantyEnd ? `expires ${mosWarrantyEnd}` : '—' }),
+      el('dt', { text: 'Builder warranty' }), el('dd', { text: builderWarrantyEnd ? `expires ${builderWarrantyEnd}` : 'none beyond MOS\'s' }),
     ])
   );
   if (!site.commissioningDate) {
-    body.appendChild(el('div', { class: 'callout callout-warn' }, [el('strong', { text: 'No commissioning date on file' }), el('span', { text: 'This ticket will be routed for manual warranty verification instead of an automatic party assignment.' })]));
-  }
-  if (site.vulnerableOccupant) {
-    body.appendChild(el('div', { class: 'callout callout-info' }, [el('strong', { text: 'Vulnerable occupant flag' }), el('span', { text: 'Prioritise a no-heat/no-hot-water report from this address.' })]));
+    body.appendChild(el('div', { class: 'callout callout-warn' }, [el('strong', { text: 'No commissioning date on file' }), el('span', { text: '"Always check warranty date before sending anyone" — this ticket will be routed for manual verification instead of an automatic party assignment.' })]));
   }
 
   const faultSelect = el(
     'select',
-    { id: 'intake-fault' },
-    Object.entries(state.reference.faultTypes).map(([id, ft]) => el('option', { value: id, text: ft.label }))
+    { id: 'intake-fault', onchange: () => renderLeakOrHeatPumpFields() },
+    Object.entries(state.reference.faultTypes).map(([id, ft]) => el('option', { value: id, text: ft.label, selected: id === state.intake.lastFaultTypeId || undefined }))
   );
-  const errorCodeInput = el('input', { type: 'text', id: 'intake-error-code', placeholder: 'e.g. E7, F28' });
-  const photoInput = el('input', { type: 'file', id: 'intake-photos', multiple: true, accept: 'image/*' });
-  const symptomsInput = el('textarea', { id: 'intake-symptoms', placeholder: 'What did the customer describe?' });
-  const gasCheckbox = el('input', { type: 'checkbox', id: 'intake-gas' });
-  const coCheckbox = el('input', { type: 'checkbox', id: 'intake-co' });
+  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Main issue' }), faultSelect]));
 
-  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Fault type' }), faultSelect]));
-  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Error code (if shown on the unit)' }), errorCodeInput]));
-  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Photos' }), photoInput, el('div', { class: 'hint', text: 'Attach photos of the fault display or the affected area where possible.' })]));
-  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Symptoms / customer description' }), symptomsInput]));
-  body.appendChild(
-    el('div', { class: 'field' }, [
-      el('div', { class: 'checkbox-row danger' }, [gasCheckbox, el('label', { for: 'intake-gas', text: 'Customer reports a gas smell' })]),
-      el('div', { class: 'checkbox-row danger' }, [coCheckbox, el('label', { for: 'intake-co', text: 'Carbon monoxide alarm has activated' })]),
-    ])
-  );
+  const extraFieldsContainer = el('div', { class: 'stack', id: 'intake-extra-fields' });
+  body.appendChild(extraFieldsContainer);
+
+  function renderLeakOrHeatPumpFields() {
+    extraFieldsContainer.textContent = '';
+    const faultTypeId = faultSelect.value;
+    const faultType = state.reference.faultTypes[faultTypeId];
+
+    if (faultTypeId === 'LEAK-INGRESS') {
+      const checklistBox = el('div', { class: 'field' }, [
+        el('label', { text: 'Builder / snagging checklist (Aftercare Call Triage Guide)' }),
+        el('div', { class: 'hint', text: 'A "yes" to any of these means Builder/Snagging attends first, regardless of warranty.' }),
+      ]);
+      for (const [key, label] of Object.entries(state.reference.leakSnaggingChecklist)) {
+        const cb = el('input', { type: 'checkbox', id: `leak-${key}` });
+        cb.dataset.checklistKey = key;
+        checklistBox.appendChild(el('div', { class: 'checkbox-row' }, [cb, el('label', { for: `leak-${key}`, text: label })]));
+      }
+      extraFieldsContainer.appendChild(checklistBox);
+    }
+
+    if (faultTypeId === 'HEAT-PUMP-FAULT') {
+      extraFieldsContainer.appendChild(
+        el('div', { class: 'field' }, [
+          el('label', { text: 'Error code' }),
+          el('input', { type: 'text', id: 'intake-error-code', placeholder: 'e.g. H12, F41' }),
+          el('div', { class: 'hint', text: '"H-" = hydraulic, plumber required. "F-" or "F Gas" = warranty call required (Heat Pump Decision Tree).' }),
+        ])
+      );
+      extraFieldsContainer.appendChild(
+        el('div', { class: 'field' }, [el('label', { text: 'Serial number' }), el('input', { type: 'text', id: 'intake-serial', placeholder: 'From the unit data plate' })])
+      );
+      const certsCb = el('input', { type: 'checkbox', id: 'intake-service-certs' });
+      extraFieldsContainer.appendChild(
+        el('div', { class: 'field' }, [
+          el('div', { class: 'checkbox-row' }, [certsCb, el('label', { for: 'intake-service-certs', text: 'Annual service certificates provided by the homeowner' })]),
+          el('div', { class: 'hint', text: 'Required before a Heat Merchants supplier warranty call can be logged.' }),
+        ])
+      );
+    }
+
+    extraFieldsContainer.appendChild(
+      el('div', { class: 'field' }, [
+        el('label', { text: 'Photos / videos' }),
+        el('input', { type: 'file', id: 'intake-photos', multiple: true, accept: 'image/*,video/*' }),
+        el('div', { class: 'hint', text: faultType.examples ? `Examples: ${faultType.examples}` : '' }),
+      ])
+    );
+  }
+  renderLeakOrHeatPumpFields();
+
+  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Symptoms / customer description' }), el('textarea', { id: 'intake-symptoms', placeholder: 'What did the customer describe?' })]));
+  body.appendChild(el('div', { class: 'field' }, [el('label', { text: 'Builder (if known)' }), el('input', { type: 'text', id: 'intake-builder', value: site.builderName || '', placeholder: 'Main contractor / developer' })]));
 
   const submitBtn = el('button', {
     class: 'btn',
     onclick: async () => {
+      const faultTypeId = faultSelect.value;
+      state.intake.lastFaultTypeId = faultTypeId;
+      const leakChecklist = {};
+      document.querySelectorAll('#intake-extra-fields input[type="checkbox"][data-checklist-key]').forEach((cb) => {
+        if (cb.checked) leakChecklist[cb.dataset.checklistKey] = true;
+      });
+      const errorCodeInput = document.getElementById('intake-error-code');
+      const serialInput = document.getElementById('intake-serial');
+      const certsInput = document.getElementById('intake-service-certs');
+      const photoInput = document.getElementById('intake-photos');
+      const symptomsInput = document.getElementById('intake-symptoms');
+      const builderInput = document.getElementById('intake-builder');
+
       const payload = {
         siteId: site.siteId,
         channel: 'web-form',
-        faultTypeId: faultSelect.value,
-        errorCode: errorCodeInput.value.trim(),
-        photos: Array.from(photoInput.files || []).map((f) => f.name),
+        faultTypeId,
+        errorCode: errorCodeInput ? errorCodeInput.value.trim() : '',
+        serialNumber: serialInput ? serialInput.value.trim() : '',
+        photos: Array.from((photoInput && photoInput.files) || []).map((f) => f.name),
         symptoms: symptomsInput.value.trim(),
-        gasSmell: gasCheckbox.checked,
-        coAlarm: coCheckbox.checked,
+        leakChecklist,
+        serviceCertsProvided: certsInput ? certsInput.checked : false,
+        builderIfKnown: builderInput.value.trim(),
       };
       try {
         const { ticket } = await api('/api/tickets', { method: 'POST', body: JSON.stringify(payload) });
@@ -605,14 +686,14 @@ const VOICE_DEMOS = [
   {
     id: 'confident',
     label: '▶ Demo: confident match',
-    transcript: "Hi it's Maura Kelly, no hot water since this morning, my number is 087 555 0102",
+    transcript: "Hi it's Maura Kelly, no hot water since this morning, my number is 086 555 0102",
     say: 'This is what a phone-call transcript looks like. Watch: the house, fault type, and phone number are all extracted with confidence scores, ready for one-click review — never created as a ticket automatically.',
   },
   {
-    id: 'safety',
-    label: '▶ Demo: safety gate',
-    transcript: 'I think I can smell gas near the boiler, please send someone',
-    say: 'This is the one that matters most: what happens when gas is mentioned. Watch: it is blocked from automation entirely, regardless of how confident the fault-type match is.',
+    id: 'snagging',
+    label: '▶ Demo: snagging keyword',
+    transcript: "Hi, it's Fiona Doyle, there is water coming in around the roof after the last storm, quite a lot of it",
+    say: 'The word "roof" is on the builder/snagging checklist. Watch: the extractor flags it as a likely snagging item even from a rough transcript, so the office admin knows to route it to the builder before dispatching a plumber.',
   },
 ];
 
@@ -667,8 +748,7 @@ function renderVoiceView() {
 
   const transcriptArea = el('textarea', {
     id: 'voice-transcript',
-    style: null,
-    placeholder: 'e.g. "Hi it\'s Maura Kelly, no hot water since this morning at 087 555 0102"',
+    placeholder: 'e.g. "Hi it\'s Maura Kelly, no hot water since this morning, my number is 086 555 0102"',
   });
   transcriptArea.value = state.voice.transcript;
   transcriptArea.addEventListener('input', (e) => { state.voice.transcript = e.target.value; });
@@ -737,52 +817,63 @@ function renderVoiceDraft() {
     return panel;
   }
 
-  if (draft.safetyFlags.gasSmell || draft.safetyFlags.coAlarm) {
+  const site = draft.site ? state.sites.find((s) => s.siteId === draft.site.siteId) : null;
+
+  if (draft.leakChecklistHits && draft.leakChecklistHits.length > 0) {
     body.appendChild(
-      el('div', { class: 'callout callout-danger' }, [
-        el('strong', { text: 'Safety flag detected' }),
-        el('span', { text: 'A gas smell or CO alarm was mentioned. This can never be auto-processed — end the call by advising the customer to follow gas-safety guidance, and escalate to the on-call engineer immediately.' }),
+      el('div', { class: 'callout callout-warn' }, [
+        el('strong', { text: 'Likely builder / snagging item' }),
+        el('span', { text: `Mentions "${draft.leakChecklistHits.map((k) => state.reference.leakSnaggingChecklist[k]).join('", "')}" — on the Triage Guide's checklist. Confirm with the caller before dispatching a plumber.` }),
       ])
     );
   }
 
-  const site = draft.site ? state.sites.find((s) => s.siteId === draft.site.siteId) : null;
-  body.appendChild(
-    el('dl', { class: 'kv' }, [
-      el('dt', { text: 'Matched site' }), el('dd', { text: site ? `${site.customerName} (${Math.round(draft.site.score * 100)}% confidence)` : 'No confident match' }),
-      el('dt', { text: 'Fault type' }), el('dd', { text: `${faultLabel(draft.faultType.value)} (${Math.round(draft.faultType.score * 100)}% confidence)` }),
-      el('dt', { text: 'Error code found' }), el('dd', { text: draft.errorCode || '—' }),
-    ])
-  );
+  const kv = [
+    el('dt', { text: 'Matched site' }), el('dd', { text: site ? `${site.customerName} (${Math.round(draft.site.score * 100)}% confidence)` : 'No confident match' }),
+    el('dt', { text: 'Main issue' }), el('dd', { text: `${faultLabel(draft.faultType.value)} (${Math.round(draft.faultType.score * 100)}% confidence)` }),
+    el('dt', { text: 'Error code found' }), el('dd', { text: draft.errorCode || '—' }),
+  ];
+  if (draft.errorCodeMeaning) {
+    kv.push(el('dt', { text: 'Error code meaning' }), el('dd', { text: draft.errorCodeMeaning }));
+  }
+  body.appendChild(el('dl', { class: 'kv' }, kv));
 
   if (draft.requiresHumanReview) {
     body.appendChild(
       el('div', { class: 'callout callout-warn' }, [
         el('strong', { text: 'Needs human review' }),
-        el('span', { text: 'Confidence is low, the site could not be confidently matched, or a safety flag was raised. An office admin must confirm the details below before a ticket is created.' }),
+        el('span', { text: 'Confidence is low, or the site could not be confidently matched. An office admin must confirm the details below before a ticket is created.' }),
       ])
     );
   }
 
   const useBtn = el('button', {
     class: 'btn',
-    disabled: (!site || draft.safetyFlags.gasSmell || draft.safetyFlags.coAlarm) || undefined,
+    disabled: !site || undefined,
     onclick: () => {
       state.intake.site = site;
       state.intake.siteQuery = site.customerName;
       state.intake.lastResult = null;
-      state.view = 'intake';
       document.querySelector('[data-view="intake"]').click();
       setTimeout(() => {
         const faultSelect = document.getElementById('intake-fault');
-        const errorCodeInput = document.getElementById('intake-error-code');
-        const symptomsInput = document.getElementById('intake-symptoms');
-        if (faultSelect) faultSelect.value = draft.faultType.value;
-        if (errorCodeInput && draft.errorCode) errorCodeInput.value = draft.errorCode;
-        if (symptomsInput) symptomsInput.value = draft.transcript;
+        if (faultSelect) {
+          faultSelect.value = draft.faultType.value;
+          faultSelect.dispatchEvent(new Event('change'));
+        }
+        setTimeout(() => {
+          const errorCodeInput = document.getElementById('intake-error-code');
+          const symptomsInput = document.getElementById('intake-symptoms');
+          if (errorCodeInput && draft.errorCode) errorCodeInput.value = draft.errorCode;
+          if (symptomsInput) symptomsInput.value = draft.transcript;
+          for (const key of Object.keys(draft.leakChecklist || {})) {
+            const cb = document.getElementById(`leak-${key}`);
+            if (cb) cb.checked = true;
+          }
+        }, 0);
       }, 0);
     },
-    text: draft.safetyFlags.gasSmell || draft.safetyFlags.coAlarm ? 'Blocked — handle as emergency call' : 'Review in guided form →',
+    text: 'Review in guided form →',
   });
   body.appendChild(el('div', { class: 'actions-row' }, [useBtn]));
 
@@ -796,8 +887,8 @@ function renderOverviewView() {
   const wrap = el('div', { class: 'stack' });
 
   const open = state.tickets.filter((t) => t.state !== 'Closed' && t.state !== 'Resolved');
-  const p1 = state.tickets.filter((t) => t.priority === 'P1');
-  const chargeable = state.tickets.filter((t) => t.chargeable === true);
+  const chargeableBuilder = state.tickets.filter((t) => t.chargeable === true && t.chargeParty === 'builder');
+  const chargeableHomeowner = state.tickets.filter((t) => t.chargeable === true && t.chargeParty === 'homeowner');
   const incomplete = state.tickets.filter((t) => t.dataQuality === 'incomplete');
   const repeat = state.tickets.filter((t) => t.repeatFault);
 
@@ -811,7 +902,7 @@ function renderOverviewView() {
               state.demoNote = {
                 view: 'overview',
                 title: 'Say this',
-                text: `Right now: ${open.length} open ticket(s), ${p1.length} at P1 emergency, ${chargeable.length} flagged chargeable, ${incomplete.length} missing required evidence, and ${repeat.length} flagged as a repeat fault. These update live — go create or resolve a ticket on another tab and come back to watch these change.`,
+                text: `Right now: ${open.length} open ticket(s), ${chargeableBuilder.length} chargeable to a builder, ${chargeableHomeowner.length} chargeable to a homeowner, ${incomplete.length} missing required evidence, and ${repeat.length} flagged as a repeat fault. This is the recharge position MOS's own pitch asks for at month end. These update live — go create or resolve a ticket on another tab and come back to watch these change.`,
               };
               render();
             },
@@ -827,8 +918,8 @@ function renderOverviewView() {
 
   const cards = el('div', { class: 'card-grid' }, [
     statCard(open.length, 'Open tickets'),
-    statCard(p1.length, 'P1 emergencies'),
-    statCard(chargeable.length, 'Chargeable repairs'),
+    statCard(chargeableBuilder.length, 'Chargeable to builder'),
+    statCard(chargeableHomeowner.length, 'Chargeable to homeowner'),
     statCard(incomplete.length, 'Missing evidence'),
     statCard(repeat.length, 'Repeat-fault flags'),
   ]);
@@ -849,6 +940,24 @@ function renderOverviewView() {
   ]);
   tablePanel.appendChild(el('div', { class: 'panel-body' }, table));
   wrap.appendChild(tablePanel);
+
+  const byHouse = {};
+  for (const t of state.tickets) {
+    const site = state.sites.find((s) => s.siteId === t.siteId);
+    const key = site ? site.customerName : t.siteId;
+    byHouse[key] = (byHouse[key] || 0) + 1;
+  }
+  const repeatHouses = Object.entries(byHouse).filter(([, count]) => count >= 2);
+  if (repeatHouses.length > 0) {
+    const repeatPanel = el('div', { class: 'panel' });
+    repeatPanel.appendChild(el('div', { class: 'panel-header' }, el('h2', { text: 'Houses we keep going back to' })));
+    const repeatTable = el('table', { class: 'simple' }, [
+      el('thead', {}, el('tr', {}, [el('th', { text: 'House' }), el('th', { text: 'Calls' })])),
+      el('tbody', {}, repeatHouses.map(([name, count]) => el('tr', {}, [el('td', { text: name }), el('td', { text: String(count) })]))),
+    ]);
+    repeatPanel.appendChild(el('div', { class: 'panel-body' }, repeatTable));
+    wrap.appendChild(repeatPanel);
+  }
 
   return wrap;
 }
